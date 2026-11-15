@@ -351,7 +351,33 @@ td {
   color: var(--text-muted);
 }
 
+.mobile-nav-toggle {
+  display: none;
+  background: none;
+  border: 1px solid var(--border-color);
+  font-size: 1.25rem;
+  padding: 4px 10px;
+  border-radius: var(--radius);
+  cursor: pointer;
+  color: var(--text-main);
+}
+
 @media (max-width: 768px) {
-  .app-container { flex-direction: column; }
-  .sidebar { width: 100%; border-right: none; border-bottom: 1px solid var(--border-color); }
+  .mobile-nav-toggle { display: block; }
+  .app-container { position: relative; flex-direction: column; }
+  .sidebar {
+    display: none;
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 260px;
+    height: 100%;
+    z-index: 99;
+    background: #ffffff;
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.15);
+    border-right: 1px solid var(--border-color);
+  }
+  .sidebar.open {
+    display: flex;
+  }
 }
