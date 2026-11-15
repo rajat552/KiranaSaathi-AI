@@ -168,14 +168,128 @@ class KiranaApp {
     }
   }
 
-  async refreshAll() {
-    if (!this.shopId) return;
-    await Promise.all([
-      this.loadActivationMilestones(),
-      this.loadProducts(),
-      this.loadKhataLiquidityKPI(),
-      this.loadDashboardKPIs()
-    ]);
+  showToast(message, type = 'info', duration = 3000) {
+    let container = document.getElementById('toast-container');
+    if (!container) {
+      container = document.createElement('div');
+      container.id = 'toast-container';
+      document.body.appendChild(container);
+    }
+
+    const toast = document.createElement('div');
+    toast.className = `toast toast-${type}`;
+    toast.innerHTML = message;
+    container.appendChild(toast);
+
+    setTimeout(() => {
+      toast.style.opacity = '0';
+      toast.style.transform = 'translateY(12px)';
+      setTimeout(() => toast.remove(), 320);
+    }, duration);
+  }
+
+  refreshActiveView() {
+    const activeSection = document.querySelector('.view-section.active');
+    if (!activeSection) return;
+    const viewId = activeSection.id.replace('view-', '');
+    switch (viewId) {
+      case 'dashboard':
+        break;
+      case 'products':
+        this.loadProducts();
+        break;
+      case 'nopos':
+        this.loadNoPosData();
+        break;
+      case 'budget':
+        this.loadBudgetReplenishment();
+        break;
+      case 'khata':
+        this.loadKhataData();
+        break;
+      case 'festivals':
+        this.loadFestivalScenarios();
+        break;
+      case 'replenishment':
+        this.loadReplenishment();
+        break;
+      case 'expiry':
+        this.loadExpiry();
+        this.loadDeadStockAnalysis();
+        break;
+      case 'purchasing':
+        this.loadPurchaseOrders();
+        break;
+      case 'suppliers':
+        this.loadSuppliers();
+        break;
+      case 'audit':
+        this.loadAuditMovements();
+        break;
+    }
+  }
+
+  async refreshAll(btnElement = null, quiet = false) {
+    const btn = btnElement || document.getElementById('btnRefreshData') || document.querySelector("button[onclick*='refreshAll']");
+    const origHtml = btn ? btn.innerHTML : '🔄 Refresh Data';
+
+    if (btn) {
+      btn.disabled = true;
+      btn.innerHTML = '<span class="spin-icon">🔄</span> Refreshing...';
+      btn.style.opacity = '0.85';
+    }
+
+    try {
+      if (!this.shopId) {
+        await this.ensureAuthAndShop();
+      }
+      if (!this.shopId) {
+        throw new Error('Store profile could not be loaded. Please re-login.');
+      }
+
+      await Promise.allSettled([
+        this.loadActivationMilestones(),
+        this.loadProducts(),
+        this.loadKhataLiquidityKPI(),
+        this.loadDashboardKPIs()
+      ]);
+
+      this.refreshActiveView();
+
+      // Pulse animation on KPI cards
+      document.querySelectorAll('.kpi-card').forEach(card => {
+        card.classList.remove('pulse');
+        void card.offsetWidth;
+        card.classList.add('pulse');
+      });
+
+      if (btn) {
+        btn.innerHTML = '✅ Refreshed!';
+        btn.style.borderColor = 'var(--success)';
+        btn.style.color = 'var(--success)';
+      }
+      if (!quiet) {
+        this.showToast('✅ Store data & KPIs refreshed successfully!', 'success');
+      }
+    } catch (err) {
+      console.error('Refresh error:', err);
+      if (btn) {
+        btn.innerHTML = '❌ Error';
+        btn.style.borderColor = 'var(--danger)';
+        btn.style.color = 'var(--danger)';
+      }
+      this.showToast('❌ Refresh failed: ' + (err.message || 'Unknown error'), 'danger');
+    } finally {
+      setTimeout(() => {
+        if (btn) {
+          btn.disabled = false;
+          btn.innerHTML = origHtml;
+          btn.style.opacity = '1';
+          btn.style.borderColor = '';
+          btn.style.color = '';
+        }
+      }, 1200);
+    }
   }
 
   async loadActivationMilestones() {
