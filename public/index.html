@@ -8,9 +8,12 @@
 </head>
 <body>
   <header>
-    <div class="brand">
-      🏪 KiranaSaathi AI
-      <span>Tech4Bharat 2026</span>
+    <div style="display: flex; align-items: center; gap: 12px;">
+      <button id="mobileNavToggle" class="mobile-nav-toggle" onclick="app.toggleMobileNav()">☰</button>
+      <div class="brand">
+        🏪 KiranaSaathi AI
+        <span>Tech4Bharat 2026</span>
+      </div>
     </div>
     <div class="user-nav">
       <span id="headerShopName" style="font-weight: 600;">Connecting...</span>
@@ -723,6 +726,62 @@
           <input type="text" id="khataTxNotes" class="form-control" placeholder="e.g. Monthly grocery ration">
         </div>
         <button type="submit" id="khataTxSubmitBtn" class="btn btn-primary" style="width: 100%;">Submit Entry</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Create PO Modal -->
+  <div id="createPOModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>Create Purchase Order Draft</h2>
+        <button class="modal-close" onclick="app.closeModals()">✕</button>
+      </div>
+      <form onsubmit="app.handleCreatePODraft(event)">
+        <div class="form-group">
+          <label>Distributor / Supplier</label>
+          <select id="poModalSupplier" class="form-control" required></select>
+        </div>
+        <div class="form-group">
+          <label>Product to Order</label>
+          <select id="poModalProduct" class="form-control" required></select>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Requested Quantity</label>
+            <input type="number" id="poModalQty" class="form-control" min="1" value="10" required>
+          </div>
+          <div class="form-group">
+            <label>Agreed Unit Price (₹)</label>
+            <input type="number" id="poModalUnitPrice" class="form-control" min="0" step="0.5" value="100" required>
+          </div>
+        </div>
+        <button type="submit" class="btn btn-primary" style="width: 100%;">Create Draft Order</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Add Supplier Modal -->
+  <div id="addSupplierModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>Register Distributor / Supplier</h2>
+        <button class="modal-close" onclick="app.closeModals()">✕</button>
+      </div>
+      <form onsubmit="app.handleAddSupplier(event)">
+        <div class="form-group">
+          <label>Distributor Name</label>
+          <input type="text" id="suppModalName" class="form-control" placeholder="e.g. Balaji FMCG Wholesalers" required>
+        </div>
+        <div class="form-group">
+          <label>Contact Phone</label>
+          <input type="tel" id="suppModalPhone" class="form-control" placeholder="e.g. 9876501234">
+        </div>
+        <div class="form-group">
+          <label>Lead Time (Days)</label>
+          <input type="number" id="suppModalLeadTime" class="form-control" value="2" min="1">
+        </div>
+        <button type="submit" class="btn btn-primary" style="width: 100%;">Save Supplier</button>
       </form>
     </div>
   </div>
