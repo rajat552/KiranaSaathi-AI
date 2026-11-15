@@ -1,0 +1,18 @@
+ANTIGRAVITY EXECUTION PROMPT — KIRANASAATHI AI
+
+The root-level `workflows.md` is the current, problem-statement-aligned execution authority for Tech4Bharat 2026, Theme 5, Problem Statement 5.1. Read the entire file before changing code.
+
+Your task is to implement the actual application described in the workflow, not to generate another plan or merely summarise the document.
+
+1. Inspect the existing repository, current branch, uncommitted changes, stack, environment templates, database, APIs, tests and deployment setup. Preserve working code and never overwrite user changes.
+2. Complete Phase 0 first. Create `docs/REPOSITORY_AUDIT.md` and `docs/FEATURE_TRACEABILITY.md`, mapping every PS-01–PS-18 requirement to actual code, tests and its status: Verified, Partial, Defective, Missing or Unverified.
+3. Compare the existing implementation with the full workflow. Do not assume any proposed feature already exists. Do not rebuild the app unnecessarily.
+4. Execute the phases sequentially. Backend and data integrity come before advanced frontend polish. Start with the smallest vertical slice: no-POS onboarding → product/local-alias resolution → stock count or supplier receipt → immutable inventory ledger → low-data reorder recommendation → hard owner-set budget allocation → owner-only purchase approval.
+5. Enforce the core challenge boundaries in backend services, not just the UI: no mandatory POS; local-name ambiguity must be confirmed; no invented sales/UPI-to-SKU inference; no uncollected khata counted as cash; every purchase remains within the owner's hard budget cap; and every order requires a current authenticated owner approval. The AI agent must never approve an order or access the database directly.
+6. Implement actual ingestion, provenance, data-quality states, reconciliation, supplier/quote evidence, expiry/dead-stock tracking, festival scenarios and a constrained multi-step agent as specified. Use deterministic backend calculations for quantities, prices, stock and budget. The LLM may interpret and orchestrate only approved tools.
+7. Add and run unit, integration, API, security, concurrency, idempotency and end-to-end tests. Never claim a test passed unless it was executed. Never hide failures by disabling validation or weakening security.
+8. Clearly label synthetic data, estimates, low-confidence forecasts and simulated integrations. Do not fabricate live supplier connectivity, payment activity, pilot results or accuracy metrics.
+9. Maintain the task tracker and produce the exact phase-completion report required by `workflows.md`. Continue implementation after the audit; do not stop at documentation or planning.
+10. Ask for approval only before destructive changes, production-data modifications, paid services, credential-dependent integrations or external financial/supplier commitments. Do not push remotely without explicit authorisation.
+
+Start now: read `workflows.md`, inspect the repository and complete Phase 0. Then continue through the execution plan, resolving blockers safely and working on independent tasks where possible. The objective is a genuinely working, backend-first, problem-statement-aligned application—not a large collection of generated files.
