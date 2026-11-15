@@ -1,0 +1,732 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>KiranaSaathi AI — Voice-First Kirana Replenishment</title>
+  <link rel="stylesheet" href="/css/styles.css">
+</head>
+<body>
+  <header>
+    <div class="brand">
+      🏪 KiranaSaathi AI
+      <span>Tech4Bharat 2026</span>
+    </div>
+    <div class="user-nav">
+      <span id="headerShopName" style="font-weight: 600;">Connecting...</span>
+      <span id="headerUserRole" class="badge-role owner">OWNER</span>
+      <button id="logoutBtn" class="btn btn-secondary btn-sm">Logout</button>
+    </div>
+  </header>
+
+  <div class="app-container">
+    <nav class="sidebar">
+      <button class="nav-item active" data-view="dashboard">📊 Dashboard</button>
+      <button class="nav-item" data-view="products">📦 Products & Stock</button>
+      <button class="nav-item" data-view="nopos">📋 No-POS Operations</button>
+      <button class="nav-item" data-view="budget">💵 Cash Budget Plan</button>
+      <button class="nav-item" data-view="khata">📒 Khata & Liquidity</button>
+      <button class="nav-item" data-view="festivals">🎉 Festival Planner</button>
+      <button class="nav-item" data-view="pos">🛒 POS Checkout</button>
+      <button class="nav-item" data-view="replenishment">📈 Reorder Recommendations</button>
+      <button class="nav-item" data-view="expiry">⏳ Expiry & Dead Stock</button>
+      <button class="nav-item" data-view="purchasing">📑 Purchase Orders</button>
+      <button class="nav-item" data-view="suppliers">🚚 Suppliers & Quotes</button>
+      <button class="nav-item" data-view="agent">🤖 AI Voice Assistant</button>
+      <button class="nav-item" data-view="audit">📜 Audit Ledger</button>
+    </nav>
+
+    <main class="main-content">
+      <!-- 1. DASHBOARD VIEW -->
+      <section id="view-dashboard" class="view-section active">
+        <div class="page-header">
+          <h1 class="page-title">Store Overview & Milestones</h1>
+          <button class="btn btn-secondary" onclick="app.refreshAll()">🔄 Refresh Data</button>
+        </div>
+
+        <div class="card" style="margin-bottom: 20px; background: linear-gradient(135deg, #eff6ff 0%, #f0fdf4 100%); border-left: 4px solid var(--primary);">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+            <h3 style="font-size: 1.05rem; color: var(--primary);">🎯 7-Day Guided Activation Status (PS-11)</h3>
+            <span id="activationBadge" class="badge-role owner" style="background: var(--primary); color: white;">0% Activated</span>
+          </div>
+          <p id="activationNextStep" style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 12px;">Loading activation roadmap...</p>
+          <div id="activationMilestonesList" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px;"></div>
+        </div>
+
+        <div class="kpi-grid">
+          <div class="kpi-card">
+            <div class="kpi-title">TOTAL PRODUCTS</div>
+            <div class="kpi-value" id="kpiTotalProducts">0</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-title">LOW STOCK ITEMS</div>
+            <div class="kpi-value" id="kpiLowStock" style="color: var(--danger);">0</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-title">NEAR-EXPIRY LOTS</div>
+            <div class="kpi-value" id="kpiNearExpiry" style="color: var(--warning);">0</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-title">SAFE CASH BUFFER</div>
+            <div class="kpi-value" id="kpiLiquidCash" style="color: var(--success);">₹0</div>
+          </div>
+        </div>
+
+        <div class="card">
+          <h2 style="font-size: 1.1rem; margin-bottom: 12px;">Operational Alerts & Dead Stock Highlights</h2>
+          <div id="dashboardAlertsList">Loading alerts...</div>
+        </div>
+      </section>
+
+      <!-- 2. PRODUCTS & INVENTORY VIEW -->
+      <section id="view-products" class="view-section">
+        <div class="page-header">
+          <h1 class="page-title">Product Catalogue & Stock</h1>
+          <div style="display: flex; gap: 8px;">
+            <button class="btn btn-secondary" onclick="app.showReconcileModal()">⚖️ Reconcile Ledger</button>
+            <button class="btn btn-primary" onclick="app.showAddProductModal()">+ Add Product</button>
+          </div>
+        </div>
+
+        <div class="card">
+          <div style="display: flex; gap: 12px; margin-bottom: 16px;">
+            <input type="text" id="productSearchInput" class="form-control" placeholder="Search by name, brand, SKU or barcode..." oninput="app.filterProducts()">
+          </div>
+          <table>
+            <thead>
+              <tr>
+                <th>Product</th>
+                <th>Category</th>
+                <th>Cost / Sale</th>
+                <th>On-Hand Stock</th>
+                <th>Reorder Point</th>
+                <th>Status</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody id="productsTableBody">
+              <tr><td colspan="7">Loading products...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- 3. NO-POS OPERATIONS VIEW -->
+      <section id="view-nopos" class="view-section">
+        <div class="page-header">
+          <h1 class="page-title">No-POS Informal Operations (PS-05 & PS-09)</h1>
+          <div style="display: flex; gap: 8px;">
+            <button class="btn btn-secondary" onclick="app.showAddSnapshotModal()">📷 Shelf Count Snapshot</button>
+            <button class="btn btn-primary" onclick="app.showAddInvoiceModal()">📄 Ingest Supplier Invoice</button>
+          </div>
+        </div>
+
+        <div class="card" style="margin-bottom: 20px;">
+          <h2 style="font-size: 1.05rem; margin-bottom: 12px;">🎙️ Daily Informal Voice / Text Depletion Observation</h2>
+          <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 12px;">
+            Small kiranas don't scan barcodes at checkout. Log informal sales using voice or local aliases (e.g. <em>"5 packet cheeni beche"</em>).
+          </p>
+          <form onsubmit="app.handleRecordDepletion(event)" style="display: flex; gap: 10px;">
+            <input type="text" id="depletionInput" class="form-control" placeholder="e.g. 5 cheeni packet beche or 8 parle-g" required style="flex: 1;">
+            <button type="submit" class="btn btn-primary">Log Depletion</button>
+          </form>
+        </div>
+
+        <div class="card" style="margin-bottom: 20px;">
+          <h2 style="font-size: 1.05rem; margin-bottom: 12px;">📑 Ingested Supplier Bills & Review Queue</h2>
+          <table>
+            <thead>
+              <tr>
+                <th>Invoice #</th>
+                <th>Lines</th>
+                <th>Total Cost</th>
+                <th>Status</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="invoicesTableBody">
+              <tr><td colspan="5">Loading invoice queue...</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="card">
+          <h2 style="font-size: 1.05rem; margin-bottom: 12px;">📸 Recent Shelf Audit Snapshots</h2>
+          <table>
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>Performed By</th>
+                <th>Variance Cost</th>
+                <th>Items Counted</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody id="snapshotsTableBody">
+              <tr><td colspan="5">Loading shelf snapshots...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- 4. CASH BUDGET REPLENISHMENT VIEW -->
+      <section id="view-budget" class="view-section">
+        <div class="page-header">
+          <h1 class="page-title">Owner Cash Budget & Allocation (PS-12)</h1>
+        </div>
+
+        <div class="card" style="margin-bottom: 20px;">
+          <div style="display: flex; gap: 20px; align-items: center; flex-wrap: wrap;">
+            <div style="flex: 1; min-width: 250px;">
+              <label style="font-weight: 600; font-size: 0.9rem; margin-bottom: 6px; display: block;">
+                Hard Weekly Cash Budget Cap (₹)
+              </label>
+              <input type="number" id="budgetLimitInput" class="form-control" value="5000" min="500" step="500" onchange="app.loadBudgetReplenishment()">
+            </div>
+            <button class="btn btn-primary" onclick="app.loadBudgetReplenishment()" style="align-self: flex-end;">
+              ⚡ Run Bounded Allocation
+            </button>
+          </div>
+          <div id="budgetSummaryBanner" style="margin-top: 15px; font-size: 0.9rem; color: var(--text-muted);"></div>
+        </div>
+
+        <div class="kpi-grid" style="margin-bottom: 20px;">
+          <div class="kpi-card">
+            <div class="kpi-title">BUDGET CAP</div>
+            <div class="kpi-value" id="kpiBudgetCap">₹5,000</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-title">ALLOCATED SPEND</div>
+            <div class="kpi-value" id="kpiBudgetAllocated" style="color: var(--primary);">₹0</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-title">REMAINING BUFFER</div>
+            <div class="kpi-value" id="kpiBudgetRemaining" style="color: var(--success);">₹0</div>
+          </div>
+        </div>
+
+        <div class="card" style="margin-bottom: 20px;">
+          <h2 style="font-size: 1.05rem; margin-bottom: 12px; color: var(--success);">✅ Prioritized Allocated SKUs</h2>
+          <table>
+            <thead>
+              <tr>
+                <th>Product</th>
+                <th>Category</th>
+                <th>Allocated Qty</th>
+                <th>Unit Cost</th>
+                <th>Line Total</th>
+                <th>Priority Rationale</th>
+              </tr>
+            </thead>
+            <tbody id="budgetAllocatedTableBody">
+              <tr><td colspan="6">Loading allocation...</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="card">
+          <h2 style="font-size: 1.05rem; margin-bottom: 12px; color: var(--danger);">⏸️ Deferred SKUs (Preserving Cash Liquidity)</h2>
+          <table>
+            <thead>
+              <tr>
+                <th>Product</th>
+                <th>Category</th>
+                <th>Needed Qty</th>
+                <th>Unit Cost</th>
+                <th>Estimated Cost</th>
+                <th>Reason for Deferral</th>
+              </tr>
+            </thead>
+            <tbody id="budgetDeferredTableBody">
+              <tr><td colspan="6">No deferred items.</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- 5. KHATA & LIQUIDITY CONTEXT VIEW -->
+      <section id="view-khata" class="view-section">
+        <div class="page-header">
+          <h1 class="page-title">Customer Khata & Cash Liquidity (PS-08)</h1>
+          <button class="btn btn-primary" onclick="app.showAddKhataCustomerModal()">+ Add Customer Account</button>
+        </div>
+
+        <div class="card" style="margin-bottom: 20px; background: #fffbeb; border-left: 4px solid var(--warning);">
+          <h3 style="font-size: 1.05rem; color: #b45309; margin-bottom: 6px;">🛡️ Core Liquidity Invariant Enforced</h3>
+          <p id="khataInvariantText" style="font-size: 0.9rem; color: #92400e;">
+            Uncollected customer credit is illiquid debt. It is completely excluded from safe replenishment cash budgets.
+          </p>
+        </div>
+
+        <div class="kpi-grid" style="margin-bottom: 20px;">
+          <div class="kpi-card">
+            <div class="kpi-title">LIQUID CASH IN HAND</div>
+            <div class="kpi-value" id="kpiKhataLiquidCash" style="color: var(--success);">₹0</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-title">TOTAL UNCOLLECTED KHATA</div>
+            <div class="kpi-value" id="kpiKhataReceivables" style="color: var(--warning);">₹0</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-title">SAFE REORDER BUDGET CAP</div>
+            <div class="kpi-value" id="kpiKhataSafeCap" style="color: var(--primary);">₹0</div>
+          </div>
+        </div>
+
+        <div class="card">
+          <h2 style="font-size: 1.05rem; margin-bottom: 12px;">Customer Credit Accounts</h2>
+          <table>
+            <thead>
+              <tr>
+                <th>Customer Name</th>
+                <th>Phone</th>
+                <th>Credit Limit</th>
+                <th>Outstanding Balance</th>
+                <th>Status</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="khataCustomersTableBody">
+              <tr><td colspan="6">Loading khata ledger...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- 6. FESTIVAL SCENARIOS VIEW -->
+      <section id="view-festivals" class="view-section">
+        <div class="page-header">
+          <h1 class="page-title">Festival Demand Scenario Planner (PS-04)</h1>
+          <div style="display: flex; gap: 10px; align-items: center;">
+            <select id="festivalSelect" class="form-control" onchange="app.loadFestivalScenarios()">
+              <option value="diwali">🪔 Diwali & Dhanteras</option>
+              <option value="eid">🌙 Eid-ul-Fitr</option>
+              <option value="holi">🎨 Holi</option>
+              <option value="pongal_sankranti">🌾 Pongal / Makar Sankranti</option>
+            </select>
+          </div>
+        </div>
+
+        <div id="festivalScenariosGrid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; margin-bottom: 20px;">
+          <!-- Rendered dynamically -->
+        </div>
+
+        <div class="card">
+          <h2 style="font-size: 1.05rem; margin-bottom: 12px;">Projected Festival Stock Build List</h2>
+          <table>
+            <thead>
+              <tr>
+                <th>Product</th>
+                <th>Category</th>
+                <th>Current Stock</th>
+                <th>Festival Demand</th>
+                <th>Recommended Build</th>
+                <th>Estimated Cost</th>
+              </tr>
+            </thead>
+            <tbody id="festivalItemsTableBody">
+              <tr><td colspan="6">Select a festival to view scenario projections.</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- 7. POS CHECKOUT VIEW -->
+      <section id="view-pos" class="view-section">
+        <div class="page-header">
+          <h1 class="page-title">POS Billing & Cash Register</h1>
+        </div>
+
+        <div class="card" style="max-width: 650px; margin: 0 auto;">
+          <form onsubmit="app.handleCreateSale(event)">
+            <div class="form-group">
+              <label>Select Product</label>
+              <select id="posProductSelect" class="form-control" required></select>
+            </div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+              <div class="form-group">
+                <label>Quantity</label>
+                <input type="number" id="posQuantity" class="form-control" value="1" min="1" required>
+              </div>
+              <div class="form-group">
+                <label>Payment Method</label>
+                <select id="posPaymentMethod" class="form-control">
+                  <option value="CASH">CASH</option>
+                  <option value="UPI">UPI</option>
+                  <option value="CREDIT">KHATA (CREDIT)</option>
+                </select>
+              </div>
+            </div>
+            <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 10px; padding: 12px; font-size: 1rem;">
+              Complete Sale & Record FEFO Movement
+            </button>
+          </form>
+        </div>
+      </section>
+
+      <!-- 8. REORDER RECOMMENDATIONS VIEW -->
+      <section id="view-replenishment" class="view-section">
+        <div class="page-header">
+          <h1 class="page-title">Deterministic Reorder Recommendations</h1>
+        </div>
+
+        <div class="card">
+          <table>
+            <thead>
+              <tr>
+                <th>Product</th>
+                <th>Stock</th>
+                <th>Daily Velocity</th>
+                <th>Days Left</th>
+                <th>Reorder Suggestion</th>
+                <th>Data Quality</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody id="replenishmentTableBody">
+              <tr><td colspan="7">Loading recommendations...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- 9. EXPIRY & DEAD STOCK VIEW -->
+      <section id="view-expiry" class="view-section">
+        <div class="page-header">
+          <h1 class="page-title">Expiry Exposure & Dead Stock Ageing (PS-01)</h1>
+        </div>
+
+        <div class="card" style="margin-bottom: 20px;">
+          <h2 style="font-size: 1.05rem; margin-bottom: 12px;">⏳ Near-Expiry Inventory Lots (FEFO Risk)</h2>
+          <table>
+            <thead>
+              <tr>
+                <th>Product</th>
+                <th>Batch</th>
+                <th>Remaining</th>
+                <th>Tied Capital</th>
+                <th>Expiry Date</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody id="expiryTableBody">
+              <tr><td colspan="6">Loading expiry risks...</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="card">
+          <h2 style="font-size: 1.05rem; margin-bottom: 12px;">📦 Dead Stock Valuation & Ageing Brackets</h2>
+          <table>
+            <thead>
+              <tr>
+                <th>Product</th>
+                <th>Category</th>
+                <th>On-Hand</th>
+                <th>Tied Capital</th>
+                <th>Ageing Bucket</th>
+                <th>Recommended Action</th>
+              </tr>
+            </thead>
+            <tbody id="deadStockTableBody">
+              <tr><td colspan="6">Loading dead stock analysis...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- 10. PURCHASE ORDERS VIEW -->
+      <section id="view-purchasing" class="view-section">
+        <div class="page-header">
+          <h1 class="page-title">Purchase Orders & Owner Approval</h1>
+          <button class="btn btn-primary" onclick="app.showCreatePOModal()">+ Create PO Draft</button>
+        </div>
+
+        <div class="card">
+          <table>
+            <thead>
+              <tr>
+                <th>PO Number</th>
+                <th>Supplier</th>
+                <th>Items Qty</th>
+                <th>Total Cost</th>
+                <th>Status</th>
+                <th>Created</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="poTableBody">
+              <tr><td colspan="7">Loading purchase orders...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- 11. SUPPLIERS & QUOTES VIEW -->
+      <section id="view-suppliers" class="view-section">
+        <div class="page-header">
+          <h1 class="page-title">Supplier Directory & Quotations</h1>
+          <button class="btn btn-primary" onclick="app.showAddSupplierModal()">+ Add Supplier</button>
+        </div>
+
+        <div class="card">
+          <table>
+            <thead>
+              <tr>
+                <th>Supplier Name</th>
+                <th>Contact</th>
+                <th>Lead Time (Days)</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody id="suppliersTableBody">
+              <tr><td colspan="4">Loading suppliers...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- 12. AI VOICE ASSISTANT VIEW -->
+      <section id="view-agent" class="view-section">
+        <div class="page-header">
+          <h1 class="page-title">Agentic AI & Voice Assistant</h1>
+        </div>
+
+        <div class="chat-box">
+          <div class="chat-messages" id="chatMessages">
+            <div class="chat-bubble assistant">
+              Namaste! I am your KiranaSaathi AI Assistant. You can speak or type in English, Hindi, or Hinglish:
+              <br><br>
+              • <em>"What should I reorder today?"</em><br>
+              • <em>"Analyze my dead stock and locked cash."</em><br>
+              • <em>"Plan replenishment under cash budget 5000."</em><br>
+              • <em>"How much money is in customer khata?"</em><br>
+              • <em>"Show festival demand surge for Diwali."</em>
+            </div>
+          </div>
+          <form class="chat-input-bar" onsubmit="app.handleSendChatMessage(event)">
+            <button type="button" id="voiceMicBtn" class="btn btn-secondary" onclick="app.toggleVoiceInput()" title="Voice Microphone">
+              🎙️ Speak
+            </button>
+            <input type="text" id="chatInput" class="form-control" placeholder="Ask AI assistant or say 'What should I reorder?'..." required>
+            <button type="submit" class="btn btn-primary">Send</button>
+          </form>
+        </div>
+      </section>
+
+      <!-- 13. AUDIT LEDGER VIEW -->
+      <section id="view-audit" class="view-section">
+        <div class="page-header">
+          <h1 class="page-title">Immutable Stock Movement Ledger</h1>
+        </div>
+
+        <div class="card">
+          <table>
+            <thead>
+              <tr>
+                <th>Timestamp</th>
+                <th>Product</th>
+                <th>Movement Type</th>
+                <th>Delta</th>
+                <th>Cost</th>
+                <th>Actor</th>
+                <th>Reason</th>
+              </tr>
+            </thead>
+            <tbody id="auditMovementsBody">
+              <tr><td colspan="7">Loading ledger movements...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <!-- MODALS -->
+
+  <!-- Add Product Modal -->
+  <div id="addProductModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>Add Product to Catalogue</h2>
+        <button class="modal-close" onclick="app.closeModals()">✕</button>
+      </div>
+      <form onsubmit="app.handleCreateProduct(event)">
+        <div class="form-group">
+          <label>Product Name</label>
+          <input type="text" id="modalProdName" class="form-control" required placeholder="e.g. Parle-G 100g">
+        </div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+          <div class="form-group">
+            <label>Category</label>
+            <input type="text" id="modalProdCategory" class="form-control" required placeholder="e.g. Biscuits">
+          </div>
+          <div class="form-group">
+            <label>Unit</label>
+            <select id="modalProdUnit" class="form-control">
+              <option value="PACK">PACK</option>
+              <option value="PCS">PCS</option>
+              <option value="KG">KG</option>
+              <option value="G">G</option>
+              <option value="L">L</option>
+            </select>
+          </div>
+        </div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+          <div class="form-group">
+            <label>Cost Price (₹)</label>
+            <input type="number" id="modalProdCost" class="form-control" required min="0" step="0.5">
+          </div>
+          <div class="form-group">
+            <label>Selling Price (₹)</label>
+            <input type="number" id="modalProdPrice" class="form-control" required min="0" step="0.5">
+          </div>
+        </div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+          <div class="form-group">
+            <label>Reorder Threshold</label>
+            <input type="number" id="modalProdReorder" class="form-control" value="10" min="0">
+          </div>
+          <div class="form-group">
+            <label>Initial Opening Stock</label>
+            <input type="number" id="modalProdOpening" class="form-control" value="0" min="0">
+          </div>
+        </div>
+        <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 10px;">Create Product</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Receive Stock Modal -->
+  <div id="receiveStockModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>Record Stock Receiving</h2>
+        <button class="modal-close" onclick="app.closeModals()">✕</button>
+      </div>
+      <form onsubmit="app.handleDirectReceipt(event)">
+        <input type="hidden" id="receiveProductId">
+        <div class="form-group">
+          <label>Product</label>
+          <input type="text" id="receiveProductName" class="form-control" readonly>
+        </div>
+        <div class="form-group">
+          <label>Quantity Received</label>
+          <input type="number" id="receiveQty" class="form-control" min="1" required>
+        </div>
+        <div class="form-group">
+          <label>Unit Cost (₹)</label>
+          <input type="number" id="receiveCost" class="form-control" min="0" step="0.5" required>
+        </div>
+        <button type="submit" class="btn btn-success" style="width: 100%;">Confirm Stock Receipt</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Shelf Snapshot Modal -->
+  <div id="snapshotModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>Record Shelf Stock Snapshot</h2>
+        <button class="modal-close" onclick="app.closeModals()">✕</button>
+      </div>
+      <form onsubmit="app.handleRecordSnapshot(event)">
+        <div class="form-group">
+          <label>Product on Shelf</label>
+          <select id="snapshotProductSelect" class="form-control" required></select>
+        </div>
+        <div class="form-group">
+          <label>Actual Physical Count on Shelf</label>
+          <input type="number" id="snapshotCountedQty" class="form-control" min="0" required>
+        </div>
+        <div class="form-group">
+          <label>Notes / Reason</label>
+          <input type="text" id="snapshotNotes" class="form-control" placeholder="e.g. Weekly physical shelf count">
+        </div>
+        <button type="submit" class="btn btn-primary" style="width: 100%;">Apply Snapshot Audit</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Ingest Invoice Modal -->
+  <div id="invoiceModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>Ingest Supplier Invoice (Bill)</h2>
+        <button class="modal-close" onclick="app.closeModals()">✕</button>
+      </div>
+      <form onsubmit="app.handleIngestInvoice(event)">
+        <div class="form-group">
+          <label>Invoice Number</label>
+          <input type="text" id="invModalNum" class="form-control" placeholder="e.g. INV-2026-88" required>
+        </div>
+        <div class="form-group">
+          <label>Line Description / Local Alias</label>
+          <input type="text" id="invModalDesc" class="form-control" placeholder="e.g. Parle-G 100g or cheeni packet" required>
+        </div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+          <div class="form-group">
+            <label>Quantity</label>
+            <input type="number" id="invModalQty" class="form-control" min="1" value="20" required>
+          </div>
+          <div class="form-group">
+            <label>Unit Cost (₹)</label>
+            <input type="number" id="invModalCost" class="form-control" min="1" step="0.5" value="25" required>
+          </div>
+        </div>
+        <button type="submit" class="btn btn-primary" style="width: 100%;">Submit to Verification Queue</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Add Khata Customer Modal -->
+  <div id="khataCustomerModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>Create Customer Credit Account</h2>
+        <button class="modal-close" onclick="app.closeModals()">✕</button>
+      </div>
+      <form onsubmit="app.handleCreateKhataCustomer(event)">
+        <div class="form-group">
+          <label>Customer Full Name</label>
+          <input type="text" id="khataModalName" class="form-control" placeholder="e.g. Ramesh Bhai" required>
+        </div>
+        <div class="form-group">
+          <label>Mobile Number</label>
+          <input type="tel" id="khataModalPhone" class="form-control" placeholder="e.g. 9876543210">
+        </div>
+        <div class="form-group">
+          <label>Credit Limit (₹)</label>
+          <input type="number" id="khataModalLimit" class="form-control" value="5000" min="500">
+        </div>
+        <button type="submit" class="btn btn-primary" style="width: 100%;">Create Account</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Record Khata Transaction Modal -->
+  <div id="khataTxModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2 id="khataTxModalTitle">Record Credit / Collection</h2>
+        <button class="modal-close" onclick="app.closeModals()">✕</button>
+      </div>
+      <form onsubmit="app.handleSubmitKhataTx(event)">
+        <input type="hidden" id="khataTxCustomerId">
+        <input type="hidden" id="khataTxType">
+        <div class="form-group">
+          <label>Amount (₹)</label>
+          <input type="number" id="khataTxAmount" class="form-control" min="1" step="1" required>
+        </div>
+        <div class="form-group">
+          <label>Notes / Description</label>
+          <input type="text" id="khataTxNotes" class="form-control" placeholder="e.g. Monthly grocery ration">
+        </div>
+        <button type="submit" id="khataTxSubmitBtn" class="btn btn-primary" style="width: 100%;">Submit Entry</button>
+      </form>
+    </div>
+  </div>
+
+  <script src="/js/app.js"></script>
+</body>
+</html>
