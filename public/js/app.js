@@ -32,6 +32,10 @@ class KiranaApp {
         const view = document.getElementById(`view-${viewId}`);
         if (view) view.classList.add('active');
 
+        // Auto close mobile drawer if open
+        const sidebar = document.querySelector('.sidebar');
+        if (sidebar) sidebar.classList.remove('open');
+
         if (viewId === 'dashboard') this.loadActivationMilestones();
         if (viewId === 'nopos') this.loadNoPosData();
         if (viewId === 'budget') this.loadBudgetReplenishment();
@@ -49,6 +53,11 @@ class KiranaApp {
       localStorage.clear();
       window.location.reload();
     });
+  }
+
+  toggleMobileNav() {
+    const sidebar = document.querySelector('.sidebar');
+    if (sidebar) sidebar.classList.toggle('open');
   }
 
   async ensureAuthAndShop() {
@@ -207,14 +216,30 @@ class KiranaApp {
     }
   }
 
-  renderProductsTable() {
+  filterProducts() {
+    const q = (document.getElementById('productSearchInput')?.value || '').toLowerCase().trim();
+    if (!q) {
+      this.renderProductsTable(this.products);
+      return;
+    }
+    const filtered = this.products.filter(p =>
+      (p.name && p.name.toLowerCase().includes(q)) ||
+      (p.brand && p.brand.toLowerCase().includes(q)) ||
+      (p.sku && p.sku.toLowerCase().includes(q)) ||
+      (p.category && p.category.toLowerCase().includes(q))
+    );
+    this.renderProductsTable(filtered);
+  }
+
+  renderProductsTable(items = this.products) {
     const tbody = document.getElementById('productsTableBody');
-    if (!this.products.length) {
+    if (!tbody) return;
+    if (!items || !items.length) {
       tbody.innerHTML = '<tr><td colspan="7">No products registered yet. Click "+ Add Product" to seed catalogue.</td></tr>';
       return;
     }
 
-    tbody.innerHTML = this.products.map(p => `
+    tbody.innerHTML = items.map(p => `
       <tr>
         <td><strong>${p.name}</strong> ${p.brand ? `<span style="font-size:0.8rem; color:var(--text-muted);">(${p.brand})</span>` : ''}</td>
         <td>${p.category}</td>
@@ -654,17 +679,18 @@ class KiranaApp {
   async loadPurchaseOrders() {
     const res = await this.apiGet(`/shops/${this.shopId}/purchase-orders`);
     const tbody = document.getElementById('poTableBody');
-    if (res.success && res.data.length > 0) {
-      tbody.innerHTML = res.data.map(po => `
+    const pos = Array.isArray(res.data) ? res.data : (res.data?.purchaseOrders || res.data?.pos || []);
+    if (res.success && pos.length > 0) {
+      tbody.innerHTML = pos.map(po => `
         <tr>
           <td><strong>${po.orderNumber}</strong></td>
-          <td>${po.supplierName || 'Distributor'}</td>
+          <td>${po.supplierId?.name || po.supplierName || 'Distributor'}</td>
           <td>${po.items.length} SKUs</td>
-          <td><strong>₹${po.totalEstimatedCost}</strong></td>
+          <td><strong>₹${po.totalCost || po.totalEstimatedCost || 0}</strong></td>
           <td><span class="badge ${po.status === 'APPROVED' ? 'badge-success' : po.status === 'DRAFT' ? 'badge-warning' : 'badge-primary'}">${po.status}</span></td>
           <td>${new Date(po.createdAt).toLocaleDateString()}</td>
           <td>
-            ${po.status === 'DRAFT' && this.role === 'owner' ? `<button class="btn btn-success btn-sm" onclick="app.approvePO('${po._id}')">Approve</button>` : ''}
+            ${(po.status === 'DRAFT' || po.status === 'PENDING_APPROVAL') ? `<button class="btn btn-success btn-sm" onclick="app.approvePO('${po._id}')">Approve</button>` : ''}
             ${po.status === 'APPROVED' ? `<button class="btn btn-primary btn-sm" onclick="app.receiveFullPO('${po._id}')">Receive Goods</button>` : ''}
           </td>
         </tr>
@@ -689,15 +715,14 @@ class KiranaApp {
     if (!poRes.success) return;
 
     const po = poRes.data;
-    const lines = po.items.map(item => ({
-      productId: item.productId,
-      quantityReceived: item.requestedQty - item.receivedQty,
-      actualUnitCost: item.estimatedUnitCost
+    const receivedItems = po.items.map(item => ({
+      productId: (item.productId?._id || item.productId).toString(),
+      quantityReceived: item.requestedQty - (item.receivedQty || 0)
     }));
 
     const res = await this.apiPost(
       `/shops/${this.shopId}/purchase-orders/${poId}/receive`,
-      { lines },
+      { receivedItems },
       `recv_${poId}_${Date.now()}`
     );
 
@@ -707,6 +732,109 @@ class KiranaApp {
       await this.refreshAll();
     } else {
       alert(`❌ Receiving failed: ${res.error?.message}`);
+    }
+  }
+
+  async quickDraftPO(productId, suggestedQty) {
+    let suppliersRes = await this.apiGet(`/shops/${this.shopId}/suppliers`);
+    let supplierId = suppliersRes.data?.[0]?._id;
+    if (!supplierId) {
+      const suppCreate = await this.apiPost(`/shops/${this.shopId}/suppliers`, {
+        name: 'Balaji FMCG Wholesalers',
+        phone: '9876543210',
+        leadTimeDays: 2
+      });
+      if (suppCreate.success) {
+        supplierId = suppCreate.data?._id || suppCreate.data?.id;
+      }
+    }
+    const prod = this.products.find(p => p._id === productId);
+    const unitPrice = prod?.costPrice || 50;
+    const poRes = await this.apiPost(`/shops/${this.shopId}/purchase-orders`, {
+      supplierId: supplierId || '60c72b2f9b1d8b2bad8e9999',
+      items: [{
+        productId,
+        requestedQty: Math.max(1, Math.round(suggestedQty)),
+        unitPrice
+      }]
+    });
+    if (poRes.success) {
+      alert(`✅ Purchase Order Draft created! Order #${poRes.data?.orderNumber || poRes.data?.id || ''}. Check Purchase Orders tab to approve.`);
+      await this.loadPurchaseOrders();
+    } else {
+      alert(`❌ Could not create Draft PO: ${poRes.error?.message}`);
+    }
+  }
+
+  async showCreatePOModal() {
+    const suppSelect = document.getElementById('poModalSupplier');
+    const prodSelect = document.getElementById('poModalProduct');
+    const res = await this.apiGet(`/shops/${this.shopId}/suppliers`);
+    if (res.success && res.data.length > 0) {
+      suppSelect.innerHTML = res.data.map(s => `<option value="${s._id}">${s.name}</option>`).join('');
+    } else {
+      suppSelect.innerHTML = '<option value="">Default FMCG Wholesaler</option>';
+    }
+    prodSelect.innerHTML = this.products.map(p => `<option value="${p._id}">${p.name} (Cost: ₹${p.costPrice})</option>`).join('');
+    if (this.products.length > 0) {
+      document.getElementById('poModalUnitPrice').value = this.products[0].costPrice;
+    }
+    document.getElementById('createPOModal').classList.add('active');
+  }
+
+  async handleCreatePODraft(e) {
+    e.preventDefault();
+    let supplierId = document.getElementById('poModalSupplier').value;
+    if (!supplierId) {
+      const suppCreate = await this.apiPost(`/shops/${this.shopId}/suppliers`, {
+        name: 'Balaji FMCG Wholesalers',
+        phone: '9876543210',
+        leadTimeDays: 2
+      });
+      if (suppCreate.success) {
+        supplierId = suppCreate.data?._id || suppCreate.data?.id;
+      }
+    }
+    const productId = document.getElementById('poModalProduct').value;
+    const requestedQty = parseInt(document.getElementById('poModalQty').value, 10);
+    const unitPrice = parseFloat(document.getElementById('poModalUnitPrice').value);
+
+    const res = await this.apiPost(`/shops/${this.shopId}/purchase-orders`, {
+      supplierId: supplierId || '60c72b2f9b1d8b2bad8e9999',
+      items: [{ productId, requestedQty, unitPrice }]
+    });
+
+    if (res.success) {
+      alert(`✅ Purchase Order Draft created! Order #${res.data?.orderNumber || res.data?.id || ''}.`);
+      this.closeModals();
+      await this.loadPurchaseOrders();
+    } else {
+      alert(`❌ Failed to create draft PO: ${res.error?.message}`);
+    }
+  }
+
+  showAddSupplierModal() {
+    document.getElementById('addSupplierModal').classList.add('active');
+  }
+
+  async handleAddSupplier(e) {
+    e.preventDefault();
+    const name = document.getElementById('suppModalName').value;
+    const phone = document.getElementById('suppModalPhone').value;
+    const leadTimeDays = parseInt(document.getElementById('suppModalLeadTime').value, 10) || 2;
+
+    const res = await this.apiPost(`/shops/${this.shopId}/suppliers`, {
+      name,
+      phone,
+      leadTimeDays
+    });
+
+    if (res.success) {
+      alert('✅ Supplier registered successfully!');
+      this.closeModals();
+      await this.loadSuppliers();
+    } else {
+      alert(`❌ Failed to register supplier: ${res.error?.message}`);
     }
   }
 
@@ -908,7 +1036,8 @@ class KiranaApp {
     );
 
     if (res.success) {
-      alert(`✅ Sale complete! Total: ₹${res.data.totalAmount}. Inventory deducted via FEFO.`);
+      const amount = res.data.sale?.totalAmount ?? res.data.totalAmount ?? 0;
+      alert(`✅ Sale complete! Total: ₹${amount}. Inventory deducted via FEFO.`);
       await this.refreshAll();
     } else {
       alert(`❌ Sale failed: ${res.error?.message}`);
