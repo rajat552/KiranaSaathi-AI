@@ -48,15 +48,6 @@ header {
   color: var(--primary);
 }
 
-.brand span {
-  background: #eff6ff;
-  color: var(--primary);
-  font-size: 0.75rem;
-  padding: 2px 8px;
-  border-radius: 9999px;
-  border: 1px solid #bfdbfe;
-}
-
 .user-nav {
   display: flex;
   align-items: center;
