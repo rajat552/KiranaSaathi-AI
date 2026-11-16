@@ -15,6 +15,18 @@
       </div>
     </div>
     <div class="user-nav">
+      <!-- Language Toggle Button -->
+      <button id="langToggleBtn" class="toggle-pill-btn" onclick="app.toggleLanguage()" title="Switch Language / भाषा बदलें" aria-label="Toggle language">
+        <span id="langToggleIcon">🇮🇳</span>
+        <span id="langToggleLabel">हिन्दी</span>
+      </button>
+
+      <!-- Theme Toggle Button -->
+      <button id="themeToggleBtn" class="toggle-pill-btn" onclick="app.toggleTheme()" title="Toggle Dark/Light Mode" aria-label="Toggle theme">
+        <span id="themeToggleIcon">🌙</span>
+        <span id="themeToggleLabel">Dark</span>
+      </button>
+
       <span id="headerShopName" style="font-weight: 600; cursor: pointer;" onclick="app.showAuthModal()" title="Click to view store profile or switch accounts">Connecting...</span>
       <span id="headerUserRole" class="badge-role owner" onclick="app.showAuthModal()" style="cursor: pointer;" title="Click to switch role (Owner, Manager, Staff)">OWNER</span>
       <button id="logoutBtn" class="btn btn-secondary btn-sm" onclick="app.handleAuthButtonClick()">Logout</button>
@@ -23,19 +35,19 @@
 
   <div class="app-container">
     <nav class="sidebar">
-      <button class="nav-item active" data-view="dashboard">📊 Dashboard</button>
-      <button class="nav-item" data-view="products">📦 Products & Stock</button>
-      <button class="nav-item" data-view="nopos">📋 No-POS Operations</button>
-      <button class="nav-item" data-view="budget">💵 Cash Budget Plan</button>
-      <button class="nav-item" data-view="khata">📒 Khata & Liquidity</button>
-      <button class="nav-item" data-view="festivals">🎉 Festival Planner</button>
-      <button class="nav-item" data-view="pos">🛒 POS Checkout</button>
-      <button class="nav-item" data-view="replenishment">📈 Reorder Recommendations</button>
-      <button class="nav-item" data-view="expiry">⏳ Expiry & Dead Stock</button>
-      <button class="nav-item" data-view="purchasing">📑 Purchase Orders</button>
-      <button class="nav-item" data-view="suppliers">🚚 Suppliers & Quotes</button>
-      <button class="nav-item" data-view="agent">🤖 AI Voice Assistant</button>
-      <button class="nav-item" data-view="audit">📜 Audit Ledger</button>
+      <button class="nav-item active" data-view="dashboard" data-i18n="nav_dashboard">📊 Dashboard</button>
+      <button class="nav-item" data-view="products" data-i18n="nav_products">📦 Products & Stock</button>
+      <button class="nav-item" data-view="nopos" data-i18n="nav_nopos">📋 No-POS Operations</button>
+      <button class="nav-item" data-view="budget" data-i18n="nav_budget">💵 Cash Budget Plan</button>
+      <button class="nav-item" data-view="khata" data-i18n="nav_khata">📒 Khata & Liquidity</button>
+      <button class="nav-item" data-view="festivals" data-i18n="nav_festivals">🎉 Festival Planner</button>
+      <button class="nav-item" data-view="pos" data-i18n="nav_pos">🛒 POS Checkout</button>
+      <button class="nav-item" data-view="replenishment" data-i18n="nav_replenishment">📈 Reorder Recommendations</button>
+      <button class="nav-item" data-view="expiry" data-i18n="nav_expiry">⏳ Expiry & Dead Stock</button>
+      <button class="nav-item" data-view="purchasing" data-i18n="nav_purchasing">📑 Purchase Orders</button>
+      <button class="nav-item" data-view="suppliers" data-i18n="nav_suppliers">🚚 Suppliers & Quotes</button>
+      <button class="nav-item" data-view="agent" data-i18n="nav_agent">🤖 AI Voice Assistant</button>
+      <button class="nav-item" data-view="audit" data-i18n="nav_audit">📜 Audit Ledger</button>
     </nav>
 
     <main class="main-content">
