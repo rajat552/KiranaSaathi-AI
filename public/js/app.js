@@ -9,6 +9,7 @@ class KiranaApp {
     this.token = localStorage.getItem('ks_token') || '';
     this.shopId = localStorage.getItem('ks_shop_id') || '';
     this.role = localStorage.getItem('ks_role') || 'owner';
+    this.shopName = '';
     this.products = [];
     this.isRecordingVoice = false;
 
@@ -18,7 +19,9 @@ class KiranaApp {
   async init() {
     this.setupNavigation();
     await this.ensureAuthAndShop();
-    await this.refreshAll();
+    if (this.shopId) {
+      await this.refreshAll(null, true);
+    }
   }
 
   setupNavigation() {
@@ -50,8 +53,7 @@ class KiranaApp {
     });
 
     document.getElementById('logoutBtn')?.addEventListener('click', () => {
-      localStorage.clear();
-      window.location.reload();
+      this.handleAuthButtonClick();
     });
   }
 
@@ -60,8 +62,281 @@ class KiranaApp {
     if (sidebar) sidebar.classList.toggle('open');
   }
 
+  updateHeaderUser() {
+    const shopEl = document.getElementById('headerShopName');
+    const roleEl = document.getElementById('headerUserRole');
+    const logoutBtn = document.getElementById('logoutBtn');
+
+    if (this.token && this.shopId) {
+      if (shopEl) shopEl.textContent = this.shopName || 'Sri Murugan Super Store';
+      if (roleEl) {
+        roleEl.textContent = (this.role || 'OWNER').toUpperCase();
+        roleEl.className = `badge-role ${this.role || 'owner'}`;
+        roleEl.style.display = 'inline-block';
+      }
+      if (logoutBtn) {
+        logoutBtn.textContent = 'Logout';
+        logoutBtn.className = 'btn btn-secondary btn-sm';
+      }
+    } else {
+      if (shopEl) shopEl.textContent = 'Guest / Signed Out';
+      if (roleEl) {
+        roleEl.textContent = 'GUEST';
+        roleEl.className = 'badge-role staff';
+      }
+      if (logoutBtn) {
+        logoutBtn.textContent = 'Sign In';
+        logoutBtn.className = 'btn btn-primary btn-sm';
+      }
+    }
+  }
+
+  handleAuthButtonClick() {
+    if (this.token) {
+      this.handleLogout();
+    } else {
+      this.showAuthModal('quick');
+    }
+  }
+
+  handleLogout() {
+    this.token = '';
+    this.shopId = '';
+    this.role = '';
+    this.shopName = '';
+    localStorage.removeItem('ks_token');
+    localStorage.removeItem('ks_shop_id');
+    localStorage.removeItem('ks_role');
+    localStorage.setItem('ks_logged_out', 'true');
+
+    this.updateHeaderUser();
+    this.showToast('👋 You have logged out successfully.', 'info');
+    this.showAuthModal('quick');
+  }
+
+  showAuthModal(tab = 'quick') {
+    this.switchAuthTab(tab);
+    document.getElementById('authModal')?.classList.add('active');
+  }
+
+  switchAuthTab(tab) {
+    ['quick', 'login', 'register'].forEach(t => {
+      const content = document.getElementById(`authTab${t.charAt(0).toUpperCase() + t.slice(1)}`);
+      const btn = document.getElementById(`tabBtn${t.charAt(0).toUpperCase() + t.slice(1)}`);
+      if (content) content.style.display = t === tab ? 'block' : 'none';
+      if (btn) {
+        if (t === tab) btn.classList.add('active');
+        else btn.classList.remove('active');
+      }
+    });
+  }
+
+  async quickSwitchRole(targetRole = 'owner') {
+    localStorage.removeItem('ks_logged_out');
+
+    const demoUsers = {
+      owner: {
+        name: 'Murugan Pillai (Owner)',
+        email: 'murugan.owner@kirana.in',
+        password: 'KiranaPassword2026!'
+      },
+      manager: {
+        name: 'Suresh Kumar (Manager)',
+        email: 'manager@kirana.in',
+        password: 'KiranaPassword2026!'
+      },
+      staff: {
+        name: 'Ravi Cashier (Staff)',
+        email: 'staff@kirana.in',
+        password: 'KiranaPassword2026!'
+      }
+    };
+
+    const targetUser = demoUsers[targetRole] || demoUsers.owner;
+
+    this.showToast(`⏳ Authenticating as ${targetRole.toUpperCase()}...`, 'info', 1500);
+
+    // 1. Try login
+    let logRes = await fetch(`${this.apiBase}/auth/login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        identifier: targetUser.email,
+        password: targetUser.password
+      })
+    });
+    let data = await logRes.json();
+
+    // 2. If user does not exist, register them
+    if (!logRes.ok || !data.data?.accessToken) {
+      const regRes = await fetch(`${this.apiBase}/auth/register`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: targetUser.name,
+          email: targetUser.email,
+          password: targetUser.password
+        })
+      });
+      data = await regRes.json();
+    }
+
+    if (!data.data?.accessToken) {
+      this.showToast(`❌ Could not sign in as ${targetRole}: ${data.error?.message || 'Authentication failed'}`, 'danger');
+      return;
+    }
+
+    this.token = data.data.accessToken;
+    localStorage.setItem('ks_token', this.token);
+
+    // 3. Fetch profile & memberships
+    const meRes = await this.apiGet('/auth/me');
+    if (meRes.success) {
+      const memberships = meRes.data.memberships || [];
+      if (memberships.length > 0) {
+        this.shopId = memberships[0].shopId;
+        this.shopName = memberships[0].shopName || 'Sri Murugan Super Store';
+        this.role = memberships[0].role || targetRole;
+      } else {
+        // If owner, create shop; if manager/staff, attach to default shop
+        const shopRes = await this.apiPost('/shops', {
+          name: 'Sri Murugan Super Store',
+          address: '15 Main Bazaar, Madurai'
+        });
+        if (shopRes.success) {
+          this.shopId = shopRes.data.shop.id;
+          this.shopName = shopRes.data.shop.name;
+          this.role = targetRole;
+        }
+      }
+
+      localStorage.setItem('ks_shop_id', this.shopId);
+      localStorage.setItem('ks_role', this.role);
+    }
+
+    this.updateHeaderUser();
+    this.closeModals();
+    this.showToast(`✅ Successfully switched to ${this.role.toUpperCase()} role!`, 'success');
+    await this.refreshAll(null, true);
+  }
+
+  async handleCustomLogin(e) {
+    e.preventDefault();
+    const identifier = document.getElementById('loginModalIdentifier')?.value.trim();
+    const password = document.getElementById('loginModalPassword')?.value;
+    const submitBtn = document.getElementById('loginModalSubmitBtn');
+
+    if (!identifier || !password) return;
+    if (submitBtn) {
+      submitBtn.disabled = true;
+      submitBtn.innerHTML = '<span class="spin-icon">🔄</span> Signing in...';
+    }
+
+    try {
+      const res = await fetch(`${this.apiBase}/auth/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ identifier, password })
+      });
+      const data = await res.json();
+      if (!res.ok || !data.data?.accessToken) {
+        throw new Error(data.error?.message || 'Invalid credentials');
+      }
+
+      localStorage.removeItem('ks_logged_out');
+      this.token = data.data.accessToken;
+      localStorage.setItem('ks_token', this.token);
+
+      const meRes = await this.apiGet('/auth/me');
+      if (meRes.success) {
+        const memberships = meRes.data.memberships || [];
+        if (memberships.length > 0) {
+          this.shopId = memberships[0].shopId;
+          this.shopName = memberships[0].shopName || 'Kirana Store';
+          this.role = memberships[0].role;
+        }
+        localStorage.setItem('ks_shop_id', this.shopId);
+        localStorage.setItem('ks_role', this.role);
+      }
+
+      this.updateHeaderUser();
+      this.closeModals();
+      this.showToast('✅ Signed in successfully!', 'success');
+      await this.refreshAll(null, true);
+    } catch (err) {
+      this.showToast(`❌ ${err.message}`, 'danger');
+    } finally {
+      if (submitBtn) {
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Sign In';
+      }
+    }
+  }
+
+  async handleCustomRegister(e) {
+    e.preventDefault();
+    const name = document.getElementById('regModalName')?.value.trim();
+    const email = document.getElementById('regModalEmail')?.value.trim();
+    const phone = document.getElementById('regModalPhone')?.value.trim();
+    const password = document.getElementById('regModalPassword')?.value;
+    const shopName = document.getElementById('regModalShopName')?.value.trim();
+    const shopAddress = document.getElementById('regModalShopAddress')?.value.trim();
+    const submitBtn = document.getElementById('regModalSubmitBtn');
+
+    if (submitBtn) {
+      submitBtn.disabled = true;
+      submitBtn.innerHTML = '<span class="spin-icon">🔄</span> Creating store...';
+    }
+
+    try {
+      const regRes = await fetch(`${this.apiBase}/auth/register`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, email, phone, password })
+      });
+      const data = await regRes.json();
+      if (!regRes.ok || !data.data?.accessToken) {
+        throw new Error(data.error?.message || 'Registration failed');
+      }
+
+      localStorage.removeItem('ks_logged_out');
+      this.token = data.data.accessToken;
+      localStorage.setItem('ks_token', this.token);
+
+      const shopRes = await this.apiPost('/shops', {
+        name: shopName,
+        address: shopAddress || 'India'
+      });
+      if (shopRes.success) {
+        this.shopId = shopRes.data.shop.id;
+        this.shopName = shopRes.data.shop.name;
+        this.role = 'owner';
+        localStorage.setItem('ks_shop_id', this.shopId);
+        localStorage.setItem('ks_role', this.role);
+      }
+
+      this.updateHeaderUser();
+      this.closeModals();
+      this.showToast('🎉 Store registered successfully!', 'success');
+      await this.refreshAll(null, true);
+    } catch (err) {
+      this.showToast(`❌ ${err.message}`, 'danger');
+    } finally {
+      if (submitBtn) {
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Create Store & Sign In';
+      }
+    }
+  }
+
   async ensureAuthAndShop() {
     try {
+      const isLoggedOut = localStorage.getItem('ks_logged_out') === 'true';
+      if (isLoggedOut && !this.token) {
+        this.updateHeaderUser();
+        return;
+      }
+
       if (!this.token) {
         const regRes = await fetch(`${this.apiBase}/auth/register`, {
           method: 'POST',
@@ -98,10 +373,9 @@ class KiranaApp {
         if (memberships.length > 0) {
           this.shopId = memberships[0].shopId;
           this.role = memberships[0].role;
+          this.shopName = memberships[0].shopName || 'Sri Murugan Super Store';
           localStorage.setItem('ks_shop_id', this.shopId);
           localStorage.setItem('ks_role', this.role);
-          document.getElementById('headerShopName').textContent = memberships[0].shopName || 'Kirana Store';
-          document.getElementById('headerUserRole').textContent = this.role.toUpperCase();
         } else {
           const shopRes = await this.apiPost('/shops', {
             name: 'Sri Murugan Super Store',
@@ -109,15 +383,18 @@ class KiranaApp {
           });
           if (shopRes.success) {
             this.shopId = shopRes.data.shop.id;
+            this.shopName = shopRes.data.shop.name;
             this.role = 'owner';
             localStorage.setItem('ks_shop_id', this.shopId);
             localStorage.setItem('ks_role', this.role);
-            document.getElementById('headerShopName').textContent = shopRes.data.shop.name;
           }
         }
       }
+
+      this.updateHeaderUser();
     } catch (err) {
       console.error('Auth initialization error:', err);
+      this.updateHeaderUser();
     }
   }
 
