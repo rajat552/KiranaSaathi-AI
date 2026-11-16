@@ -12,16 +12,104 @@ class KiranaApp {
     this.shopName = '';
     this.products = [];
     this.isRecordingVoice = false;
+    this.theme = localStorage.getItem('ks_theme') || 'light';
+    this.lang = localStorage.getItem('ks_lang') || 'en';
+
+    this.i18n = {
+      en: {
+        nav_dashboard: '📊 Dashboard',
+        nav_products: '📦 Products & Stock',
+        nav_nopos: '📋 No-POS Operations',
+        nav_budget: '💵 Cash Budget Plan',
+        nav_khata: '📒 Khata & Liquidity',
+        nav_festivals: '🎉 Festival Planner',
+        nav_pos: '🛒 POS Checkout',
+        nav_replenishment: '📈 Reorder Recommendations',
+        nav_expiry: '⏳ Expiry & Dead Stock',
+        nav_purchasing: '📑 Purchase Orders',
+        nav_suppliers: '🚚 Suppliers & Quotes',
+        nav_agent: '🤖 AI Voice Assistant',
+        nav_audit: '📜 Audit Ledger',
+        theme_dark: 'Dark',
+        theme_light: 'Light'
+      },
+      hi: {
+        nav_dashboard: '📊 डैशबोर्ड',
+        nav_products: '📦 उत्पाद एवं स्टॉक',
+        nav_nopos: '📋 नो-पीओएस संचालन',
+        nav_budget: '💵 नकद बजट योजना',
+        nav_khata: '📒 खाता एवं नकदी',
+        nav_festivals: '🎉 त्योहार योजनाकार',
+        nav_pos: '🛒 पीओएस बिलिंग',
+        nav_replenishment: '📈 पुन: ऑर्डर अनुशंसा',
+        nav_expiry: '⏳ समाप्ति एवं डेड स्टॉक',
+        nav_purchasing: '📑 खरीद आदेश',
+        nav_suppliers: '🚚 आपूर्तिकर्ता एवं दरें',
+        nav_agent: '🤖 एआई वॉयस साथी',
+        nav_audit: '📜 ऑडिट लेजर',
+        theme_dark: 'डार्क',
+        theme_light: 'लाइट'
+      }
+    };
 
     this.init();
   }
 
   async init() {
+    this.applyTheme(this.theme);
+    this.applyLanguage(this.lang);
     this.setupNavigation();
     await this.ensureAuthAndShop();
     if (this.shopId) {
       await this.refreshAll(null, true);
     }
+  }
+
+  applyTheme(theme) {
+    this.theme = theme;
+    localStorage.setItem('ks_theme', theme);
+    document.documentElement.setAttribute('data-theme', theme);
+
+    const iconEl = document.getElementById('themeToggleIcon');
+    const labelEl = document.getElementById('themeToggleLabel');
+    if (iconEl) iconEl.textContent = theme === 'dark' ? '☀️' : '🌙';
+    if (labelEl) {
+      const isHindi = this.lang === 'hi';
+      labelEl.textContent = theme === 'dark' ? (isHindi ? 'लाइट' : 'Light') : (isHindi ? 'डार्क' : 'Dark');
+    }
+  }
+
+  toggleTheme() {
+    const next = this.theme === 'dark' ? 'light' : 'dark';
+    this.applyTheme(next);
+    this.showToast(next === 'dark' ? '🌙 Dark Mode enabled' : '☀️ Light Mode enabled', 'info');
+  }
+
+  applyLanguage(lang) {
+    this.lang = lang;
+    localStorage.setItem('ks_lang', lang);
+
+    const dict = this.i18n[lang] || this.i18n.en;
+    document.querySelectorAll('[data-i18n]').forEach(el => {
+      const key = el.getAttribute('data-i18n');
+      if (dict[key]) el.textContent = dict[key];
+    });
+
+    const langIcon = document.getElementById('langToggleIcon');
+    const langLabel = document.getElementById('langToggleLabel');
+    if (langIcon) langIcon.textContent = lang === 'hi' ? '🇬🇧' : '🇮🇳';
+    if (langLabel) langLabel.textContent = lang === 'hi' ? 'English' : 'हिन्दी';
+
+    const themeLabelEl = document.getElementById('themeToggleLabel');
+    if (themeLabelEl) {
+      themeLabelEl.textContent = this.theme === 'dark' ? dict.theme_light : dict.theme_dark;
+    }
+  }
+
+  toggleLanguage() {
+    const next = this.lang === 'hi' ? 'en' : 'hi';
+    this.applyLanguage(next);
+    this.showToast(next === 'hi' ? '🇮🇳 हिन्दी भाषा चुनी गई' : '🇬🇧 Switched to English', 'success');
   }
 
   setupNavigation() {
