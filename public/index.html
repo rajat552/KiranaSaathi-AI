@@ -15,9 +15,9 @@
       </div>
     </div>
     <div class="user-nav">
-      <span id="headerShopName" style="font-weight: 600;">Connecting...</span>
-      <span id="headerUserRole" class="badge-role owner">OWNER</span>
-      <button id="logoutBtn" class="btn btn-secondary btn-sm">Logout</button>
+      <span id="headerShopName" style="font-weight: 600; cursor: pointer;" onclick="app.showAuthModal()" title="Click to view store profile or switch accounts">Connecting...</span>
+      <span id="headerUserRole" class="badge-role owner" onclick="app.showAuthModal()" style="cursor: pointer;" title="Click to switch role (Owner, Manager, Staff)">OWNER</span>
+      <button id="logoutBtn" class="btn btn-secondary btn-sm" onclick="app.handleAuthButtonClick()">Logout</button>
     </div>
   </header>
 
@@ -782,6 +782,119 @@
         </div>
         <button type="submit" class="btn btn-primary" style="width: 100%;">Save Supplier</button>
       </form>
+    </div>
+  </div>
+
+  <!-- Authentication & Multi-Role Switcher Modal -->
+  <div id="authModal" class="modal">
+    <div class="modal-content" style="max-width: 520px;">
+      <div class="modal-header">
+        <h2>🔐 Account & Role Switcher</h2>
+        <button class="modal-close" onclick="app.closeModals()">✕</button>
+      </div>
+
+      <!-- Tab Selector -->
+      <div class="auth-tabs" style="display: flex; gap: 8px; margin-bottom: 16px; border-bottom: 1px solid var(--border-color); padding-bottom: 10px;">
+        <button type="button" class="btn btn-secondary btn-sm active" id="tabBtnQuick" onclick="app.switchAuthTab('quick')">⚡ Demo Roles</button>
+        <button type="button" class="btn btn-secondary btn-sm" id="tabBtnLogin" onclick="app.switchAuthTab('login')">🔑 Sign In</button>
+        <button type="button" class="btn btn-secondary btn-sm" id="tabBtnRegister" onclick="app.switchAuthTab('register')">🏬 Register Store</button>
+      </div>
+
+      <!-- Tab 1: Quick Role Switch -->
+      <div id="authTabQuick" class="auth-tab-content">
+        <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 12px;">
+          Select a role to test RBAC capabilities & permissions in <strong>Sri Murugan Super Store</strong>:
+        </p>
+
+        <div style="display: flex; flex-direction: column; gap: 10px;">
+          <!-- Owner Role -->
+          <div class="role-switch-card" onclick="app.quickSwitchRole('owner')" style="border: 1px solid #bfdbfe; background: #eff6ff; padding: 12px 14px; border-radius: 8px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; transition: all 0.2s;">
+            <div>
+              <div style="font-weight: 700; color: #1e40af; display: flex; align-items: center; gap: 6px;">
+                <span>👑 Store Owner</span>
+                <span class="badge-role owner">OWNER</span>
+              </div>
+              <div style="font-size: 0.8rem; color: var(--text-muted); margin-top: 2px;">Murugan Pillai (murugan.owner@kirana.in)</div>
+              <div style="font-size: 0.75rem; color: #3b82f6; margin-top: 2px;">• Full control, PO approvals, cash budget caps & AI agent</div>
+            </div>
+            <button class="btn btn-primary btn-sm" style="pointer-events: none;">Switch ➔</button>
+          </div>
+
+          <!-- Manager Role -->
+          <div class="role-switch-card" onclick="app.quickSwitchRole('manager')" style="border: 1px solid #fde68a; background: #fffbeb; padding: 12px 14px; border-radius: 8px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; transition: all 0.2s;">
+            <div>
+              <div style="font-weight: 700; color: #92400e; display: flex; align-items: center; gap: 6px;">
+                <span>👔 Store Manager</span>
+                <span class="badge-role manager">MANAGER</span>
+              </div>
+              <div style="font-size: 0.8rem; color: var(--text-muted); margin-top: 2px;">Suresh Kumar (manager@kirana.in)</div>
+              <div style="font-size: 0.75rem; color: #d97706; margin-top: 2px;">• Stock receipts, invoice ingestion, ledger adjustments & draft POs</div>
+            </div>
+            <button class="btn btn-secondary btn-sm" style="pointer-events: none;">Switch ➔</button>
+          </div>
+
+          <!-- Staff Role -->
+          <div class="role-switch-card" onclick="app.quickSwitchRole('staff')" style="border: 1px solid #e2e8f0; background: #f8fafc; padding: 12px 14px; border-radius: 8px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; transition: all 0.2s;">
+            <div>
+              <div style="font-weight: 700; color: #475569; display: flex; align-items: center; gap: 6px;">
+                <span>🧑‍💼 Cashier / Staff</span>
+                <span class="badge-role staff">STAFF</span>
+              </div>
+              <div style="font-size: 0.8rem; color: var(--text-muted); margin-top: 2px;">Ravi Cashier (staff@kirana.in)</div>
+              <div style="font-size: 0.75rem; color: #64748b; margin-top: 2px;">• Fast POS billing, customer Khata lookups, shelf counts</div>
+            </div>
+            <button class="btn btn-secondary btn-sm" style="pointer-events: none;">Switch ➔</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tab 2: Custom Sign In -->
+      <div id="authTabLogin" class="auth-tab-content" style="display: none;">
+        <form onsubmit="app.handleCustomLogin(event)">
+          <div class="form-group">
+            <label>Email or Phone</label>
+            <input type="text" id="loginModalIdentifier" class="form-control" placeholder="e.g. murugan.owner@kirana.in" required>
+          </div>
+          <div class="form-group">
+            <label>Password</label>
+            <input type="password" id="loginModalPassword" class="form-control" placeholder="Enter password" required>
+          </div>
+          <button type="submit" id="loginModalSubmitBtn" class="btn btn-primary" style="width: 100%;">Sign In</button>
+        </form>
+      </div>
+
+      <!-- Tab 3: Register Store -->
+      <div id="authTabRegister" class="auth-tab-content" style="display: none;">
+        <form onsubmit="app.handleCustomRegister(event)">
+          <div class="form-group">
+            <label>Owner Full Name</label>
+            <input type="text" id="regModalName" class="form-control" placeholder="e.g. Anand Sharma" required>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Email</label>
+              <input type="email" id="regModalEmail" class="form-control" placeholder="anand@kirana.in" required>
+            </div>
+            <div class="form-group">
+              <label>Phone</label>
+              <input type="tel" id="regModalPhone" class="form-control" placeholder="9876543210">
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Password</label>
+            <input type="password" id="regModalPassword" class="form-control" placeholder="Min 8 characters" minlength="8" required>
+          </div>
+          <div class="form-group">
+            <label>Store Name</label>
+            <input type="text" id="regModalShopName" class="form-control" placeholder="e.g. Sharma Provision Store" required>
+          </div>
+          <div class="form-group">
+            <label>Store Address</label>
+            <input type="text" id="regModalShopAddress" class="form-control" placeholder="e.g. 12 Gandhi Road, Jaipur">
+          </div>
+          <button type="submit" id="regModalSubmitBtn" class="btn btn-primary" style="width: 100%;">Create Store & Sign In</button>
+        </form>
+      </div>
     </div>
   </div>
 
