@@ -5,3 +5,11 @@ dist/
 *.log
 coverage/
 .DS_Store
+
+# Documentation & Specifications
+understanding.md
+understanding*.md
+workflows.md
+workflows*.md
+docs/
+
