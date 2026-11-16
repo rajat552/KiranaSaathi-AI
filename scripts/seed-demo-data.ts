@@ -67,7 +67,7 @@ export async function seedDemoData() {
   });
   await shop.save();
 
-  // 4. Create Membership
+  // 4. Create Memberships (Owner, Manager, Staff for multi-role demo)
   const membership = new Membership({
     shopId: shop._id,
     userId: owner._id,
@@ -75,6 +75,36 @@ export async function seedDemoData() {
     status: 'active'
   });
   await membership.save();
+
+  const managerPasswordHash = await hashPassword('KiranaPassword2026!');
+  const manager = new User({
+    name: 'Suresh Kumar (Manager)',
+    email: 'manager@kirana.in',
+    phone: '9840112233',
+    passwordHash: managerPasswordHash
+  });
+  await manager.save();
+  await new Membership({
+    shopId: shop._id,
+    userId: manager._id,
+    role: 'manager',
+    status: 'active'
+  }).save();
+
+  const staffPasswordHash = await hashPassword('KiranaPassword2026!');
+  const staff = new User({
+    name: 'Ravi Cashier (Staff)',
+    email: 'staff@kirana.in',
+    phone: '9840998877',
+    passwordHash: staffPasswordHash
+  });
+  await staff.save();
+  await new Membership({
+    shopId: shop._id,
+    userId: staff._id,
+    role: 'staff',
+    status: 'active'
+  }).save();
 
   // 5. Create Suppliers
   const supHUL = new Supplier({
