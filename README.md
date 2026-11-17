@@ -1,20 +1,37 @@
+# KiranaSaathi AI
+
+```text
+██╗  ██╗██╗██████╗  █████╗ ███╗   ██╗ █████╗ ███████╗ █████╗  █████╗ ████████╗██╗  ██╗██╗   █████╗ ██╗
+██║ ██╔╝██║██╔══██╗██╔══██╗████╗  ██║██╔══██╗██╔════╝██╔══██╗██╔══██╗╚══██╔══╝██║  ██║██║  ██╔══██╗██║
+█████╔╝ ██║██████╔╝███████║██╔██╗ ██║███████║███████╗███████║███████║   ██║   ███████║██║  ███████║██║
+██╔═██╗ ██║██╔══██╗██╔══██║██║╚██╗██║██╔══██║╚════██║██╔══██║██╔══██║   ██║   ██╔══██║██║  ██╔══██║██║
+██║  ██╗██║██║  ██║██║  ██║██║ ╚████║██║  ██║███████║██║  ██║██║  ██║   ██║   ██║  ██║██║  ██║  ██║██║
+╚═╝  ╚═╝╚═╝╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═══╝╚═╝  ╚═╝╚══════╝╚═╝  ╚═╝╚═╝  ╚═╝   ╚═╝   ╚═╝  ╚═╝╚═╝  ╚═╝  ╚═╝╚═╝
+```
+
 <div align="center">
 
-# 🏪 KiranaSaathi AI
+### A Voice-First Replenishment Agent & Stock Intelligence for Kirana Retailers
+**Official Submission for Tech4Bharat 2026 (GAVS HackCulture) — Problem Statement 5.1**
 
-### *Voice-First Inventory Intelligence & Cash-Budgeted Replenishment for Kirana Retailers*
+[![License: ISC](https://img.shields.io/badge/License-ISC-yellow.svg)](https://opensource.org/licenses/ISC)
+[![Node.js](https://img.shields.io/badge/Node.js-v22.14.0-339933?logo=node.js&logoColor=white)](https://nodejs.org/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.7_%7C_Strict-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
+[![Express](https://img.shields.io/badge/Express-4.21.2-000000?logo=express&logoColor=white)](https://expressjs.com/)
+[![Architecture](https://img.shields.io/badge/Architecture-Modular_Hexagonal-blueviolet)](#-system-architecture)
 
-**Built for GAVS Hackathon — Tech4Bharat 2026 | Theme 5: Rural FMCG & Logistics | Problem Statement 5.1**
+[![AI Engine](https://img.shields.io/badge/AI_Engine-Gemini_1.5_Flash_%2B_Fallback-8E75C2?logo=googlegemini&logoColor=white)](#-system-architecture)
+[![Database](https://img.shields.io/badge/Database-MongoDB_Atlas_8.0_%7C_In--Memory-47A248?logo=mongodb&logoColor=white)](https://www.mongodb.com/)
+[![Inventory Ledger](https://img.shields.io/badge/Inventory_Ledger-FEFO_Immutable-E34F26)](#-key-features)
+[![Concurrency Guard](https://img.shields.io/badge/Concurrency-10--Thread_Atomic_Safe-FF6F00)](#-testing)
 
-[![Node.js](https://img.shields.io/badge/Node.js-v22.14.0-brightgreen?logo=node.js)](https://nodejs.org/)
-[![TypeScript](https://img.shields.io/badge/TypeScript-5.7-blue?logo=typescript)](https://www.typescriptlang.org/)
-[![Tests](https://img.shields.io/badge/Tests-31%20Passed%20%E2%80%94%20100%25-success?logo=vitest)](./tests/)
-[![License: ISC](https://img.shields.io/badge/License-ISC-yellow)](https://opensource.org/licenses/ISC)
-[![MongoDB](https://img.shields.io/badge/MongoDB-In--Memory%20%2F%20Atlas-47A248?logo=mongodb)](https://www.mongodb.com/)
+[![Frontend](https://img.shields.io/badge/Frontend-Mobile--First_PWA-5A67D8)](#-usage-guide)
+[![Language](https://img.shields.io/badge/Vernacular-English_%2F_हिन्दी-FF9933)](#-key-features)
+[![Tests](https://img.shields.io/badge/Tests-31_Passed_%7C_100%25-success?logo=vitest&logoColor=white)](./tests/)
 
----
+<br>
 
-[Problem Statement](#-problem-statement) · [Features](#-key-features) · [Quick Start](#-quick-start) · [Architecture](#-system-architecture) · [API](#-rest-api-reference) · [Testing](#-testing) · [Workflows](#-end-to-end-workflows) · [Deployment](#-deployment)
+[Live UI Showcase](#-application-screenshots) • [Problem Statement](#-problem-statement) • [Key Features](#-key-features) • [System Architecture](#-system-architecture) • [REST API Reference](#-rest-api-reference) • [Quick Start](#-quick-start) • [Testing](#-testing) • [End-to-End Workflows](#-end-to-end-workflows)
 
 </div>
 
