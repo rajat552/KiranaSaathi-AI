@@ -39,43 +39,31 @@ India has **13 million kirana (neighbourhood grocery) stores**. Most operate wit
 
 ## 🖥️ Application Screenshots
 
-> The application runs at `http://localhost:4000` after setup. Screenshots below show the actual running application.
+> The application runs locally at `http://localhost:4000`. The screenshots below show the genuine running UI components captured from the application.
 
-### Store Dashboard & KPI Overview
-![Dashboard](docs/assets/screenshots/dashboard.png)
-*7-day guided activation milestones, stock KPIs (total products, low-stock count, near-expiry lots, safe cash buffer)*
+### 1. Store Overview & KPI Dashboard
+![Store Dashboard](assets/screenshots/dashboard.png)
+*Real-time store overview showing the 7-Day Guided Activation roadmap (PS-11), key operational KPIs (Total Products, Low Stock Alerts, Near-Expiry Lots, Safe Cash Buffer), and the top header with dual Dark/Light and English/हिन्दी toggle switches.*
 
-### Cash Budget Replenishment Planner
-![Cash Budget Plan](docs/assets/screenshots/cash-budget.png)
-*Owner sets a hard weekly cash cap; engine allocates multi-SKU orders by urgency × velocity × margin. Deferred items shown with plain-language reason.*
+### 2. Multi-Role Authentication & Quick Switcher Modal
+![Header Auth Switcher](assets/screenshots/header_auth_modal.png)
+*Interactive header auth modal allowing instant switching between Owner (`murugan.owner@kirana.in`), Manager (`manager@kirana.in`), and Staff (`staff@kirana.in`) roles, as well as new user registration and store profile management.*
 
-### No-POS Informal Operations
-![No-POS Operations](docs/assets/screenshots/nopos-operations.png)
-*Voice/text depletion logging, supplier invoice ingestion queue, shelf audit snapshots — no barcode required.*
+### 3. Grounded Reorder Recommendations & Demand Velocity
+![Reorder Recommendations](assets/screenshots/reorder_rec.png)
+*Deterministic reorder recommendation engine showing on-hand stock, average daily demand velocity, days of cover left, suggested reorder quantities, and data quality indicators.*
 
-### Khata & Liquidity Dashboard
-![Khata & Liquidity](docs/assets/screenshots/khata-liquidity.png)
-*Uncollected customer credit is completely excluded from purchasing budgets — the core liquidity invariant.*
+### 4. Product Catalogue & Real-Time Stock Management
+![Product Catalogue](assets/screenshots/product_added.png)
+*Product inventory catalogue with search filtering, on-hand stock status, reorder thresholds, ledger reconciliation triggers, and modal for adding products with opening stock balances.*
 
-### AI Voice Assistant
-![AI Assistant](docs/assets/screenshots/ai-assistant.png)
-*Bilingual (English/Hindi/Hinglish) conversational agent with structured tool calls and full audit trail.*
+### 5. POS Billing & Atomic FEFO Stock Deductions
+![POS Billing](assets/screenshots/pos_sale.png)
+*POS billing interface with cash/UPI/credit payment modes, atomic stock verification, and automatic First-Expired-First-Out (FEFO) lot consumption.*
 
-### Festival Demand Scenario Planner
-![Festival Planner](docs/assets/screenshots/festival-planner.png)
-*Conservative / Moderate / Aggressive demand surge scenarios for Diwali, Eid, Holi, Pongal.*
-
-### Expiry & Dead Stock Intelligence
-![Expiry & Dead Stock](docs/assets/screenshots/expiry-deadstock.png)
-*FEFO lot tracking, near-expiry alerts, 4-bracket ageing analysis (0-30d / 31-60d / 61-90d / 90+d)*
-
-### Product Catalogue & Stock Management
-![Products & Stock](docs/assets/screenshots/products-stock.png)
-*Real-time stock status, local alias resolver, reconcile ledger, quick receive stock workflow.*
-
-### Purchase Orders & Owner Approval Gate
-![Purchase Orders](docs/assets/screenshots/purchase-orders.png)
-*Full PO lifecycle — draft → owner-approved → received. Manager/staff cannot approve (enforced at API level).*
+### 6. AI Voice & Replenishment Assistant
+![AI Voice Assistant](assets/screenshots/ai_assistant.png)
+*Conversational AI assistant supporting English, Hindi, and Hinglish queries with explainable stock guidance, budget-constrained allocations, and structured tool execution audit logs.*
 
 ---
 
@@ -242,7 +230,7 @@ KiranaSaathi-AI/
 │   └── css/styles.css            # Dark mode tokens, responsive layout
 ├── scripts/
 │   └── seed-demo-data.ts         # Full demo dataset: products, aliases, khata, POs
-├── docs/assets/screenshots/      # README screenshots
+├── assets/screenshots/           # Verified application UI screenshots
 ├── .env.example                  # Safe environment template
 ├── package.json                  # Scripts: dev, build, start, test, seed
 ├── tsconfig.json                 # Strict TypeScript config
