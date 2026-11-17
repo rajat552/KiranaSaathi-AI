@@ -18,674 +18,720 @@
 [![Node.js](https://img.shields.io/badge/Node.js-v22.14.0-339933?logo=node.js&logoColor=white)](https://nodejs.org/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.7_%7C_Strict-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 [![Express](https://img.shields.io/badge/Express-4.21.2-000000?logo=express&logoColor=white)](https://expressjs.com/)
-[![Architecture](https://img.shields.io/badge/Architecture-Modular_Hexagonal-blueviolet)](#-system-architecture)
+[![Architecture](https://img.shields.io/badge/Architecture-Modular_Hexagonal-blueviolet)](#8-system-architecture)
 
-[![AI Engine](https://img.shields.io/badge/AI_Engine-Gemini_1.5_Flash_%2B_Fallback-8E75C2?logo=googlegemini&logoColor=white)](#-system-architecture)
+[![AI Engine](https://img.shields.io/badge/AI_Engine-Gemini_1.5_Flash_%2B_Fallback-8E75C2?logo=googlegemini&logoColor=white)](#11-agentic-ai-architecture)
 [![Database](https://img.shields.io/badge/Database-MongoDB_Atlas_8.0_%7C_In--Memory-47A248?logo=mongodb&logoColor=white)](https://www.mongodb.com/)
-[![Inventory Ledger](https://img.shields.io/badge/Inventory_Ledger-FEFO_Immutable-E34F26)](#-key-features)
-[![Concurrency Guard](https://img.shields.io/badge/Concurrency-10--Thread_Atomic_Safe-FF6F00)](#-testing)
+[![Inventory Ledger](https://img.shields.io/badge/Inventory_Ledger-FEFO_Immutable-E34F26)](#9-engineering-decisions--algorithms)
+[![Concurrency Guard](https://img.shields.io/badge/Concurrency-10--Thread_Atomic_Safe-FF6F00)](#14-testing-and-verification-evidence)
 
-[![Frontend](https://img.shields.io/badge/Frontend-Mobile--First_PWA-5A67D8)](#-usage-guide)
-[![Language](https://img.shields.io/badge/Vernacular-English_%2F_हिन्दी-FF9933)](#-key-features)
-[![Tests](https://img.shields.io/badge/Tests-31_Passed_%7C_100%25-success?logo=vitest&logoColor=white)](./tests/)
+[![Frontend](https://img.shields.io/badge/Frontend-Mobile--First_PWA-5A67D8)](#5-application-screenshots)
+[![Language](https://img.shields.io/badge/Vernacular-English_%2F_हिन्दी-FF9933)](#6-feature-implementation-matrix)
+[![Tests](https://img.shields.io/badge/Tests-31_Passed_%7C_100%25-success?logo=vitest&logoColor=white)](#14-testing-and-verification-evidence)
 
 <br>
 
-[Live UI Showcase](#-application-screenshots) • [Problem Statement](#-problem-statement) • [Key Features](#-key-features) • [System Architecture](#-system-architecture) • [REST API Reference](#-rest-api-reference) • [Quick Start](#-quick-start) • [Testing](#-testing) • [End-to-End Workflows](#-end-to-end-workflows)
+[Executive Summary](#1-executive-project-introduction) • [Problem Alignment](#2-official-problem-statement-alignment) • [Live Screenshots](#5-application-screenshots) • [Feature Matrix](#6-feature-implementation-matrix) • [Architecture](#8-system-architecture) • [Algorithms](#9-engineering-decisions--algorithms) • [REST API](#13-rest-api-reference) • [Testing Evidence](#14-testing-and-verification-evidence) • [Quick Start](#16-quick-start)
 
 </div>
 
 ---
 
-## 🧩 Problem Statement
+## 1. Executive Project Introduction
 
-India has **13 million kirana (neighbourhood grocery) stores**. Most operate without POS terminals, barcodes, or digital records. The consequences are real and measurable:
+**KiranaSaathi AI** is a production-grade, event-sourced stock intelligence and automated replenishment platform engineered specifically for the operational constraints of India's 13 million micro-retailers (*kirana stores*).
 
-| Pain Point | Business Impact |
-|---|---|
-| Dead & slow-moving stock | 15–20% of working capital locked, unmonitored |
-| Expiry write-offs | ₹5,000–₹10,000/month lost silently |
-| Stockouts on fast-selling staples | Lost sales, customer attrition |
-| No POS billing | Existing inventory tools don't fit the workflow |
-| Colloquial product names | *"Peela wala tel"*, *"Cheeni moti wali"* — no ERP understands them |
-| Khata credit miscounted as cash | Acute liquidity shortfalls when purchasing |
-
-**KiranaSaathi AI** is not another dashboard bolted onto retail infrastructure that doesn't exist. It is built from the ground up around *how kiranas actually work* — spoken inputs, supplier invoices, shelf counts, and Hindi/Hinglish everything.
+Unlike conventional retail inventory management software (ERP) built on the assumption of modern point-of-sale (POS) barcode scanning, clean item masters, and unconstrained purchasing capital, KiranaSaathi AI is built on a **No-POS-first architecture**:
+- It extracts inventory movement signals from **supplier delivery invoices**, **periodic physical shelf count snapshots**, and **spoken Hinglish observations** (*"5 packet cheeni nikle"*).
+- It resolves messy, colloquial regional product names to canonical catalogue SKUs using a **3-tier resolution engine** (Normalized Exact Alias $\rightarrow$ Product/SKU/Barcode regex $\rightarrow$ Dual-Metric Fuzzy Jaccard Token Overlap & Levenshtein Similarity with Devanagari Unicode support).
+- It formulates purchase orders using a **cash-constrained greedy discrete allocation algorithm** that enforces the owner's hard weekly cash budget ceiling, mathematical guarantees against spend overruns, and plain-language deferral rationale.
+- It enforces a strict **Khata Liquidity Invariant**, mathematically isolating uncollected informal customer credit from available purchasing capital.
+- It operates under a **governed ReAct (Reasoning + Acting) Agentic AI loop** restricted to an allowlist of 11 Zod-validated domain tools. The agent has zero direct database write access and cannot approve expenditure; only verified shop owners possess cryptographic authorization to approve purchase orders.
 
 ---
 
-## 🖥️ Application Screenshots
+## 2. Official Problem Statement Alignment
 
-> The application runs locally at `http://localhost:4000`. The screenshots below show the genuine running UI components captured from the application.
+- **Competition:** Tech4Bharat 2026 (GAVS HackCulture)
+- **Track / Theme:** Theme 5: Rural FMCG and Logistics
+- **Problem Statement:** **5.1 Kiranas tie up cash in dead stock while running out of fast-moving essentials**
 
-### 1. Store Overview & KPI Dashboard
-![Store Dashboard](assets/screenshots/dashboard.png)
-*Real-time store overview showing the 7-Day Guided Activation roadmap (PS-11), key operational KPIs (Total Products, Low Stock Alerts, Near-Expiry Lots, Safe Cash Buffer), and the top header with dual Dark/Light and English/हिन्दी toggle switches.*
-
-### 2. Multi-Role Authentication & Quick Switcher Modal
-![Header Auth Switcher](assets/screenshots/header_auth_modal.png)
-*Interactive header auth modal allowing instant switching between Owner (`murugan.owner@kirana.in`), Manager (`manager@kirana.in`), and Staff (`staff@kirana.in`) roles, as well as new user registration and store profile management.*
-
-### 3. Grounded Reorder Recommendations & Demand Velocity
-![Reorder Recommendations](assets/screenshots/reorder_rec.png)
-*Deterministic reorder recommendation engine showing on-hand stock, average daily demand velocity, days of cover left, suggested reorder quantities, and data quality indicators.*
-
-### 4. Product Catalogue & Real-Time Stock Management
-![Product Catalogue](assets/screenshots/product_added.png)
-*Product inventory catalogue with search filtering, on-hand stock status, reorder thresholds, ledger reconciliation triggers, and modal for adding products with opening stock balances.*
-
-### 5. POS Billing & Atomic FEFO Stock Deductions
-![POS Billing](assets/screenshots/pos_sale.png)
-*POS billing interface with cash/UPI/credit payment modes, atomic stock verification, and automatic First-Expired-First-Out (FEFO) lot consumption.*
-
-### 6. AI Voice & Replenishment Assistant
-![AI Voice Assistant](assets/screenshots/ai_assistant.png)
-*Conversational AI assistant supporting English, Hindi, and Hinglish queries with explainable stock guidance, budget-constrained allocations, and structured tool execution audit logs.*
+### Core Challenges Identified in PS 5.1
+1. **Working Capital Imbalance:** Kiranas frequently tie up 15–20% of their working capital in slow-moving or seasonal dead stock, triggering severe cash flow crunches.
+2. **Frequent Stockouts on High-Velocity Staples:** Essential commodities (Atta, Dal, Oil, Salt, Sugar, Milk) deplete unpredictably due to reliance on manual memory, casual shelf glances, and distributor visits.
+3. **Silent Expiry Losses:** ₹5,000–₹10,000 worth of packaged goods expire monthly on back-room shelves due to lack of batch and First-Expired-First-Out (FEFO) visibility.
+4. **Informal Operating Reality:** Barcode scanning at counter checkout is rejected in fast-paced neighbourhood environments where customers purchase loose goods or unbilled single items during evening peak rushes.
+5. **Colloquial Dialect & Invoice Chaos:** Suppliers and retailers write shorthand notations (*"FRTN SUN OIL 1L"*, *"Tata namak chota"*, *"Peela wala tel"*), preventing standard software cataloguing.
 
 ---
 
-## ✨ Key Features
+## 3. Problem Analysis: The Informal Retail Reality
 
-### ✅ Implemented & Verified
-
-| Feature | What It Does | Verification |
-|---|---|---|
-| **No-POS Stock Intelligence** | Accepts supplier invoices, shelf snapshots, voice/text depletion notes, khata records — without requiring POS billing | `nopos-workflow.test.ts` |
-| **Colloquial Product Alias Engine** | 4-stage resolution: exact alias → exact product → token overlap (Jaccard) → Levenshtein fuzzy. Supports Devanagari Unicode | `product-alias.test.ts` |
-| **Immutable Inventory Ledger** | Append-only movement records; atomic stock balance updates; idempotency keys prevent duplicate entries | `inventory-ledger.test.ts` |
-| **FEFO Lot Tracking** | First-Expired-First-Out batch deduction; near-expiry alerts within configurable horizon | `inventory-ledger.test.ts` |
-| **Concurrency Race Defense** | 10 simultaneous sale requests for 1 unit — only 1 succeeds; 9 receive `HTTP 409 Insufficient Stock` | `concurrency-race.test.ts` |
-| **Hard Cash Budget Allocation** | Owner sets weekly ₹ cap; greedy knapsack ranks SKUs by urgency × velocity × margin; deferred items explained | `budget-replenishment.test.ts` |
-| **Khata Liquidity Invariant** | Uncollected receivables excluded from purchase budgets; collection-probability discounting applied | `khata.test.ts` |
-| **Owner-Only Approval Gate** | PO approval enforced at API + service + DB level; manager/staff get `403`; any edit reverts to draft | `purchasing-approval.test.ts` |
-| **Governed Agentic AI** | ReAct orchestrator with 11 allowlisted tools; Zod-validated params; role-gated tools; full audit trail | `agent-tools.test.ts` |
-| **Festival Surge Planner** | Conservative (+25%) / Moderate (+60%) / Aggressive (+120%) demand scenarios for 4 Indian festivals | `festival.test.ts` |
-| **Offline Event Sync** | Offline event queue with idempotent replay, conflict detection, and timestamp-ordering | `offline-voice.test.ts` |
-| **Pooled Purchasing** | Multi-shop bulk volume proposals; independent owner liability approval; k-anonymity aggregate demand | `pooled-and-aggregate.test.ts` |
-| **7-Day Guided Activation** | 5-milestone onboarding roadmap; tracks product setup, shelf snapshot, invoice ingestion, depletion logging, first PO | `shops/activation.service.ts` |
-| **Dark/Light Theme Toggle** | Persistent CSS-variable-based dark mode; localStorage state | `public/js/app.js` |
-| **English/हिन्दी Toggle** | Full i18n dictionary; all navigation labels switch on toggle | `public/js/app.js` |
-| **Multi-Role Auth Switcher** | Quick Switch modal for Owner / Manager / Staff demo personas | `public/index.html` |
-
-### 🔮 Planned / Not Yet Implemented
-
-- Real barcode scanner integration (camera-based)
-- WhatsApp Business API for voice note ingestion
-- Offline-first PWA with service worker caching
-- Automated distributor visit scheduling
-
----
-
-## 🛠️ Technology Stack
-
-| Technology | Role | Where Used |
-|---|---|---|
-| **Node.js v22** | JavaScript runtime | `src/server.ts` |
-| **TypeScript 5.7** (Strict) | Type-safe backend | All `src/**/*.ts` |
-| **Express 4** | HTTP framework, REST API | `src/app.ts` |
-| **MongoDB + Mongoose 8** | Primary datastore, ODM | `src/config/database.ts`, all models |
-| **mongodb-memory-server** | Zero-dependency in-memory DB for dev/test | `src/config/database.ts` |
-| **bcryptjs** | Password hashing | `src/common/utils/crypto.ts` |
-| **jsonwebtoken** | JWT access + refresh tokens | `src/modules/auth/auth.service.ts` |
-| **Zod 3** | Runtime schema validation, agent tool params | All schemas + agent tools |
-| **Vitest** | Test framework (unit + integration + E2E) | `vitest.config.ts`, `tests/**` |
-| **supertest** | HTTP integration test client | All `*.test.ts` files |
-| **uuid** | Idempotency keys, reference IDs | `src/modules/sync/` |
-| **tsx** | TypeScript execution (dev), seed scripts | `package.json` dev scripts |
-| **Gemini API** *(optional)* | LLM intent detection; falls back to deterministic engine | `src/modules/agent/provider.adapter.ts` |
-| **Vanilla JS PWA** | Lightweight, mobile-first frontend; no framework dependency | `public/index.html`, `public/js/app.js` |
-| **CSS Variables** | Dark mode theming system | `public/css/styles.css` |
-
----
-
-## 🏗️ System Architecture
-
-### Component Overview
+Small kirana stores operate in an environment structurally distinct from modern organized trade:
 
 ```mermaid
 flowchart TD
-    UI["🖥️ Browser PWA\n(public/index.html + app.js)"]
-    API["⚙️ Express REST API\n(src/app.ts — /api/v1)"]
-    AUTH["🔒 Auth Module\nJWT + bcrypt\nAccess + Refresh Tokens"]
-    AGENT["🤖 Agent Module\nReAct Orchestrator\n11 Allowlisted Tools"]
-    PROVIDER["🧠 AI Provider Adapter\nGemini API → deterministic fallback"]
-    TOOLS["🔧 Agent Tool Registry\nZod-validated, Role-gated"]
-    INVENTORY["📦 Inventory Module\nImmutable Ledger\nFEFO Lots"]
-    ANALYTICS["📊 Analytics Module\nForecasting, Budget,\nFestival, Dead Stock"]
-    NOPOS["📋 No-POS Module\nInvoice Queue,\nShelf Snapshots,\nVoice Depletions"]
-    KHATA["📒 Khata Module\nCustomer Credit\nLiquidity Context"]
-    PRODUCTS["🏷️ Products + Aliases\nColloquial Name\nResolution Engine"]
-    PURCHASING["📑 Purchasing Module\nPO Lifecycle\nOwner Approval Gate"]
-    SYNC["📡 Sync Module\nOffline Event Queue\nIdempotent Replay"]
-    VOICE["🎙️ Voice Module\nHinglish Intent Parser"]
-    MONGO[("🗄️ MongoDB\nin-memory or Atlas")]
+    subgraph Informal Retail Environment
+        C1["Customer Rush (No-POS Checkout)"] -->|Manual Billing / Memory| S1["Unrecorded Stock Depletions"]
+        C2["Distributor Delivery Bills"] -->|Messy Handwritten / Regional Shorthand| S2["Unstructured Stock Receipts"]
+        C3["Informal Customer Khata"] -->|Illiquid Receivables (Uncollected)| S3["Distorted Cash Perception"]
+    end
 
-    UI -->|REST / JSON| API
-    API --> AUTH
-    API --> AGENT
-    API --> INVENTORY
-    API --> ANALYTICS
-    API --> NOPOS
-    API --> KHATA
-    API --> PRODUCTS
-    API --> PURCHASING
-    API --> SYNC
-    API --> VOICE
+    S1 --> CONSEQ["Financial Consequences"]
+    S2 --> CONSEQ
+    S3 --> CONSEQ
 
-    AGENT --> PROVIDER
-    PROVIDER --> TOOLS
-    TOOLS --> INVENTORY
-    TOOLS --> ANALYTICS
-    TOOLS --> KHATA
-    TOOLS --> PRODUCTS
-    TOOLS --> PURCHASING
-
-    INVENTORY --> MONGO
-    ANALYTICS --> MONGO
-    NOPOS --> MONGO
-    KHATA --> MONGO
-    PRODUCTS --> MONGO
-    PURCHASING --> MONGO
-    SYNC --> MONGO
-    AUTH --> MONGO
+    subgraph Operational Breakdown
+        CONSEQ --> F1["15-20% Locked in Stagnant Dead Stock"]
+        CONSEQ --> F2["₹5,000-₹10,000/mo Silent Expiry Write-Offs"]
+        CONSEQ --> F3["Mid-Week Stockouts on Essential Staples"]
+        CONSEQ --> F4["Cash Flow Depletion When Ordering"]
+    end
 ```
 
-### Security & Multi-Tenancy Model
+Attempts to solve this by imposing supermarket ERPs fail because:
+- Demanding barcode scanning causes customer checkout queues and walkouts.
+- Requiring upfront digitization of 2,000+ SKUs results in immediate abandonment during onboarding.
+- Standard Economic Order Quantity (EOQ) formulas assume unconstrained bank lines of credit, whereas kirana owners operate under hard weekly cash ceilings (e.g., ₹5,000–₹25,000 cash in hand).
+
+---
+
+## 4. Product Solution and Differentiation
+
+KiranaSaathi AI bridges the informal operating model with mathematical inventory rigor:
+
+| Capability | Legacy Retail ERPs / POS | Modern B2B E-Commerce Apps | KiranaSaathi AI (This Project) |
+|---|---|---|---|
+| **Primary Input Model** | Mandatory barcode scanning at POS | In-app catalogue browsing | **No-POS First**: Physical shelf snapshots, supplier invoice queue, voice depletion |
+| **Product Recognition** | Strict UPC / EAN barcode required | Standard standardized catalogue | **3-Tier Colloquial Alias Engine**: Resolves Hinglish, regional shorthand, Devanagari |
+| **Replenishment Strategy** | Unconstrained EOQ / Min-Max | Vendor push promotions | **Hard Owner Cash Budget Knapsack**: $O(N \log N)$ greedy allocation with explainable deferrals |
+| **Customer Credit (Khata)** | Separate unlinked ledger | Not supported | **Khata Liquidity Invariant**: Receivables discounted and isolated from purchasing budget |
+| **Inventory Accounting** | Mutable balance counters | Simple warehouse stock | **Immutable Append-Only Movement Ledger** with strict FEFO batch allocation |
+| **Order Authorization** | Auto-EDI purchase orders | Auto-debit distributor credit | **Strict Owner-Only Approval Gate**: Non-bypassable API/DB invariant; Manager/AI blocked |
+| **Onboarding Horizon** | 2–4 weeks catalogue setup | 1–2 days account setup | **7-Day Guided Activation**: Operational value delivered from first 20 staples on Day 1 |
+
+---
+
+## 5. Application Screenshots
+
+The screenshots below show the genuine, running UI components of KiranaSaathi AI served locally at `http://localhost:4000`:
+
+### 1. Store Overview & Operational KPI Dashboard
+![Store Dashboard](assets/screenshots/dashboard.png)
+*Real-time store overview displaying 7-Day Guided Activation roadmap (PS-11), live stock KPIs (Total Products, Low Stock Alerts, Near-Expiry Lots, Safe Cash Buffer), and the top header with dual Dark/Light mode and English/हिन्दी vernacular language toggles.*
+
+### 2. Multi-Role Authentication & Quick Switcher Modal
+![Header Auth Switcher](assets/screenshots/header_auth_modal.png)
+*Interactive multi-role authentication modal supporting instant persona switching between Owner (`murugan.owner@kirana.in`), Manager (`manager@kirana.in`), and Staff (`staff@kirana.in`), custom credential authentication, and new store onboarding.*
+
+### 3. Explainable Reorder Recommendations & Demand Velocity
+![Reorder Recommendations](assets/screenshots/reorder_rec.png)
+*Deterministic replenishment intelligence calculating average daily sales velocity, days of stock cover remaining, suggested reorder quantities, and data quality confidence tiers.*
+
+### 4. Product Catalogue & Real-Time Stock Management
+![Product Catalogue](assets/screenshots/product_added.png)
+*Product inventory catalogue featuring instantaneous search, on-hand balances, reorder thresholds, ledger reconciliation triggers, and modal workflow for adding products with opening stock balances.*
+
+### 5. POS Checkout with Atomic FEFO Lot Deductions
+![POS Billing](assets/screenshots/pos_sale.png)
+*Optional POS checkout interface supporting cash, UPI, and customer credit (Khata) transactions with database-level race protection and automatic First-Expired-First-Out batch deduction.*
+
+### 6. Conversational AI Voice Assistant
+![AI Voice Assistant](assets/screenshots/ai_assistant.png)
+*Bilingual AI assistant supporting English, Hindi, and Hinglish queries, executing allowlisted domain tools, and generating structured execution traces with zero direct database write access.*
+
+---
+
+## 6. Feature Implementation Matrix
+
+Every feature is classified with explicit factual verification:
+- `[VERIFIED]`: Implemented in source code and proven by automated test suites.
+- `[IMPLEMENTED]`: Fully implemented in backend and UI; manual/browser verification completed.
+- `[PARTIAL]`: Backend capabilities implemented; frontend or external integration partially mocked/pending.
+- `[PLANNED]`: Architectural roadmap item not yet implemented.
+
+| ID | Feature Description | Scope & Module | Status | Verification Evidence |
+|---|---|---|:---:|---|
+| **PS-01** | Dead Stock Landed-Cost Valuation & 4-Bracket Ageing (0-30, 31-60, 61-90, 90+ days) | `src/modules/analytics/forecasting.service.ts` | `[VERIFIED]` | `tests/integration/forecasting.test.ts` |
+| **PS-02** | Near-Expiry Lot Detection & FEFO Allocation Guidance | `src/modules/inventory/inventory.service.ts` | `[VERIFIED]` | `tests/integration/inventory-ledger.test.ts` |
+| **PS-03** | Explainable Daily Reorder Recommendations & Velocity Metrics | `src/modules/analytics/forecasting.service.ts` | `[VERIFIED]` | `tests/integration/forecasting.test.ts` |
+| **PS-04** | Regional Festival Demand Surge Scenarios (+25%, +60%, +120%) | `src/modules/analytics/festival.service.ts` | `[VERIFIED]` | `tests/integration/festival.test.ts` |
+| **PS-05** | No-POS Physical Shelf Count Snapshots & Ledger Reconciliation | `src/modules/nopos/nopos.service.ts` | `[VERIFIED]` | `tests/integration/nopos-workflow.test.ts` |
+| **PS-06** | Atomic POS Multi-Item Checkout & Concurrency Oversell Guard | `src/modules/sales/sale.service.ts` | `[VERIFIED]` | `tests/integration/concurrency-race.test.ts` |
+| **PS-07** | Idempotent Stock Receipts & Inventory Audit Movements | `src/modules/inventory/inventory.service.ts` | `[VERIFIED]` | `tests/integration/inventory-ledger.test.ts` |
+| **PS-08** | Customer Khata Ledger & Core Liquidity Invariant Enforcement | `src/modules/khata/khata.service.ts` | `[VERIFIED]` | `tests/integration/khata.test.ts` |
+| **PS-09** | Supplier Bill Review Queue & Daily Voice Depletion Logging | `src/modules/nopos/nopos.service.ts` | `[VERIFIED]` | `tests/integration/nopos-workflow.test.ts` |
+| **PS-10** | Colloquial Product Alias Resolution Engine (Jaccard + Levenshtein) | `src/modules/products/product-alias.service.ts` | `[VERIFIED]` | `tests/integration/product-alias.test.ts` |
+| **PS-11** | 7-Day Guided Activation Roadmap & Milestone Tracker | `src/modules/shops/activation.service.ts` | `[IMPLEMENTED]` | `tests/e2e/complete-kirana-workflow.test.ts` |
+| **PS-12** | Hard Owner Cash Budget Ceiling & Multi-SKU Greedy Allocation | `src/modules/analytics/budget-allocation.service.ts` | `[VERIFIED]` | `tests/integration/budget-replenishment.test.ts` |
+| **PS-13** | Strict Owner-Only PO Approval & Anti-Tamper Reversion Invariant | `src/modules/purchasing/purchasing.service.ts` | `[VERIFIED]` | `tests/integration/purchasing-approval.test.ts` |
+| **PS-14** | Supplier Directory & Quotation Lead-Time Comparison | `src/modules/suppliers/supplier.service.ts` | `[VERIFIED]` | `tests/integration/purchasing-approval.test.ts` |
+| **PS-15** | Pooled Bulk Purchasing Proposals & Joint Order Splitting | `src/modules/purchasing/pooled-purchase.service.ts` | `[VERIFIED]` | `tests/integration/pooled-and-aggregate.test.ts` |
+| **PS-16** | Privacy-Preserving Aggregate Demand Intelligence ($k$-Anonymity) | `src/modules/analytics/aggregate-demand.service.ts` | `[VERIFIED]` | `tests/integration/pooled-and-aggregate.test.ts` |
+| **PS-17** | Governed ReAct Agentic AI Tool Orchestration & Audit Logs | `src/modules/agent/agent.service.ts` | `[VERIFIED]` | `tests/integration/agent-tools.test.ts` |
+| **PS-18** | Complete 12-Step Business Lifecycle E2E Workflow | `tests/e2e/complete-kirana-workflow.test.ts` | `[VERIFIED]` | `tests/e2e/complete-kirana-workflow.test.ts` |
+| **PS-19** | Offline Event Batch Synchronization & Conflict Detection | `src/modules/sync/sync.service.ts` | `[VERIFIED]` | `tests/integration/offline-voice.test.ts` |
+| **PS-20** | Vernacular UI Localization (English & हिन्दी Dictionary) | `public/js/app.js` | `[IMPLEMENTED]` | Browser-verified UI toggle |
+| **PS-21** | Persistent Theme Switching (Dark & Light Mode via CSS Tokens) | `public/css/styles.css` | `[IMPLEMENTED]` | Browser-verified UI toggle |
+| **PS-22** | PWA Service Worker Offline Static Asset Caching | `public/sw.js` | `[PLANNED]` | Roadmap item |
+| **PS-23** | Optical Character Recognition (OCR) for Paper Invoices | `src/modules/nopos/` | `[PLANNED]` | Roadmap item |
+
+---
+
+## 7. Seven-Day Guided Activation Journey
+
+To eliminate the friction of enterprise ERP onboarding, KiranaSaathi AI implements a 5-milestone activation progression tracked by `ActivationService`:
 
 ```mermaid
 flowchart LR
-    REQ["Incoming Request"] --> MW["JWT Middleware\nVerify + Decode Token"]
-    MW --> TENANT["Tenant Isolation\nAll queries scoped to shopId"]
-    TENANT --> RBAC["Role Check\nOwner / Manager / Staff"]
-    RBAC -->|Owner| FULL["Full Access"]
-    RBAC -->|Manager| MAN["Read + Write\nNo PO Approval"]
-    RBAC -->|Staff| STAFF["Read + Record\nSales / Depletions"]
-    RBAC -->|Agent| AGENT_GATE["Agent Tools\nRole-Gated per Tool\nNo direct DB access\nNo expenditure commitment"]
+    D0["Day 0: Onboarding\nAdd 5 Top Staples\n(Atta, Dal, Oil, Salt, Sugar)"] --> D1["Day 1: Baseline\nExecute First Shelf Snapshot\n(Physical Baselines Established)"]
+    D1 --> D3["Day 3: Flow Capture\nIngest First Supplier Bill\n& Log Daily Depletion"]
+    D3 --> D5["Day 5: Risk Visibility\nReview Expiry Exposure &\n4-Bracket Dead Stock Ageing"]
+    D5 --> D7["Day 7: Full Activation\nExecute Cash-Budgeted PO\nwith Strict Owner Approval"]
+
+    style D0 fill:#eff6ff,stroke:#3b82f6
+    style D7 fill:#f0fdf4,stroke:#10b981
+```
+
+- **Milestone 1 (Day 0 — `DAY_0_STAPLES`):** Requires $\ge 5$ active products in store catalogue.
+- **Milestone 2 (Day 1 — `DAY_1_SHELF_AUDIT`):** Requires $\ge 1$ physical shelf snapshot count.
+- **Milestone 3 (Day 3 — `DAY_3_INVOICE_DEPLETION`):** Requires $\ge 1$ supplier invoice ingested and $\ge 1$ informal depletion logged.
+- **Milestone 4 (Day 5 — `DAY_5_EXPIRY_REVIEW`):** Real-time activation of FEFO near-expiry alerts and dead stock landed-cost valuation.
+- **Milestone 5 (Day 7 — `DAY_7_BUDGET_PO`):** Formulation of first cash-constrained purchase order approved by the store owner.
+
+---
+
+## 8. System Architecture
+
+The application is structured following modular hexagonal design principles:
+
+```mermaid
+flowchart TD
+    subgraph Client Layer
+        PWA["Responsive PWA\n(Vanilla JS + CSS Variables)"]
+        VOICE_REC["Web Speech API\nVoice Transcription"]
+        OFFLINE_Q["LocalStorage Event Queue\n(Idempotent Event Log)"]
+    end
+
+    subgraph API Gateway & Security
+        GATEWAY["Express 4.21 API Gateway\n(/api/v1)"]
+        AUTH_MW["JWT Authentication\n(HMAC-SHA256 Token Rotation)"]
+        TENANT_MW["Tenant Scoping Middleware\n(shopId Membership Check)"]
+        RBAC_MW["Role-Based Access Control\n(Owner / Manager / Staff)"]
+        IDEM_MW["Idempotency Middleware\n(SHA-256 Hash Verification)"]
+    end
+
+    subgraph Domain Services
+        INV_SRV["Inventory Ledger Service\n(Append-Only Movements + FEFO)"]
+        ALIAS_SRV["Product Alias Service\n(Jaccard + Levenshtein Engine)"]
+        BUDGET_SRV["Budget Allocation Service\n(Greedy Knapsack Replenishment)"]
+        KHATA_SRV["Khata Liquidity Service\n(Receivables vs Liquid Cash)"]
+        NOPOS_SRV["No-POS Operation Service\n(Snapshots & Invoice Queue)"]
+        PURCH_SRV["Purchasing Service\n(PO Lifecycle & Owner Gate)"]
+    end
+
+    subgraph Agentic AI Core
+        REACT["ReAct Orchestrator\n(Reasoning + Acting Loop)"]
+        TOOL_REG["11 Allowlisted Domain Tools\n(Zod Schemas + Role Gates)"]
+        AI_PROV["AI Provider Adapter\n(Gemini 1.5 Flash ↔ Deterministic Local)"]
+    end
+
+    subgraph Data Persistence
+        MONGO[("MongoDB 8.0\nAtlas / In-Memory MemoryServer\nCompound Tenant Indexes")]
+        AUDIT_COLL[("AgentRun & Audit Ledger\nImmutable Execution Logs")]
+    end
+
+    PWA --> GATEWAY
+    VOICE_REC --> PWA
+    OFFLINE_Q --> GATEWAY
+
+    GATEWAY --> AUTH_MW --> TENANT_MW --> RBAC_MW --> IDEM_MW
+
+    IDEM_MW --> INV_SRV
+    IDEM_MW --> ALIAS_SRV
+    IDEM_MW --> BUDGET_SRV
+    IDEM_MW --> KHATA_SRV
+    IDEM_MW --> NOPOS_SRV
+    IDEM_MW --> PURCH_SRV
+    IDEM_MW --> REACT
+
+    REACT --> AI_PROV
+    REACT --> TOOL_REG
+    TOOL_REG --> INV_SRV
+    TOOL_REG --> BUDGET_SRV
+    TOOL_REG --> KHATA_SRV
+    TOOL_REG --> ALIAS_SRV
+
+    INV_SRV --> MONGO
+    ALIAS_SRV --> MONGO
+    BUDGET_SRV --> MONGO
+    KHATA_SRV --> MONGO
+    PURCH_SRV --> MONGO
+    REACT --> AUDIT_COLL
 ```
 
 ---
 
-## 📋 Repository Structure
+## 9. Engineering Decisions and Algorithms
 
+### 9.1 Colloquial Product Alias Resolution Pipeline
+Indian retail operates across dialects, phonetic transliterations, and supplier shorthand. `ProductAliasService` implements a deterministic 3-tier matching pipeline:
+
+```mermaid
+flowchart TD
+    INPUT["Incoming Query String\ne.g., 'peela wala tel 1L'"] --> NORM["Devanagari & Text Normalizer\nLowercased, Special Chars Stripped,\nUnicode \u0900-\u097F Preserved"]
+
+    NORM --> T1{"Stage 1:\nExact Alias Lookup\nin ProductAlias?"}
+    T1 -- Yes --> RET1["Return Match\n(Confidence: 1.0, MatchType: exact_alias)"]
+    T1 -- No --> T2{"Stage 2:\nDirect SKU / Barcode /\nExact Name Match?"}
+
+    T2 -- Yes --> RET2["Return Match\n(Confidence: 1.0, MatchType: exact_product)"]
+    T2 -- No --> T3["Stage 3: Dual-Metric Fuzzy Scoring\nCompute across all Active SKUs & Aliases"]
+
+    T3 --> SCORE["For each Candidate:\n1. Levenshtein Distance Similarity (Character Level)\n2. Jaccard Token Overlap Score (Word Level)\nComposite Score = max(Lev, Jaccard, (Lev + Jaccard)/2)"]
+    SCORE --> THRESH{"Top Candidate Score\n>= 0.40 Threshold?"}
+
+    THRESH -- No --> RET_NONE["Return Unresolved\n(requiresConfirmation: true, Candidates: [])"]
+    THRESH -- Yes --> CONF{"Score >= 0.85 and\nScore - RunnerUp >= 0.15?"}
+
+    CONF -- Yes --> RET_AUTO["Auto-Resolved\n(requiresConfirmation: false)"]
+    CONF -- No --> RET_CONF["Candidate Suggestions\n(requiresConfirmation: true)"]
 ```
-KiranaSaathi-AI/
-├── src/                          # TypeScript backend source
-│   ├── app.ts                    # Express app factory, route mounting
-│   ├── server.ts                 # HTTP server bootstrap
-│   ├── config/
-│   │   ├── database.ts           # MongoDB connect (Atlas or in-memory)
-│   │   ├── env.ts                # Zod-validated environment config
-│   │   └── logger.ts             # Structured logger
-│   ├── common/
-│   │   ├── errors/               # AppError class + error codes
-│   │   ├── middleware/           # JWT auth, request ID, error handler
-│   │   ├── models/               # Shared types
-│   │   └── utils/                # Crypto, helpers
-│   └── modules/
-│       ├── agent/                # ReAct orchestrator, tool registry, provider adapter
-│       ├── analytics/            # Budget allocation, forecasting, festival, aggregate demand
-│       ├── auth/                 # Register, login, token refresh, /me
-│       ├── health/               # /health/live liveness probe
-│       ├── inventory/            # Immutable ledger, FEFO lots, stock balances
-│       ├── khata/                # Customer credit, liquidity context
-│       ├── nopos/                # Invoice queue, shelf snapshots, voice depletions
-│       ├── products/             # Product CRUD, alias resolution engine
-│       ├── purchasing/           # PO lifecycle, pooled purchasing
-│       ├── sales/                # Atomic FEFO sales with oversell guard
-│       ├── shops/                # Shop CRUD, 7-day activation milestones
-│       ├── suppliers/            # Supplier directory, quote comparison
-│       ├── sync/                 # Offline event batch sync, idempotency
-│       └── voice/                # Hinglish intent parser
-├── tests/
-│   ├── e2e/
-│   │   └── complete-kirana-workflow.test.ts   # 12-step full lifecycle E2E
-│   ├── integration/              # 14 focused integration test suites
-│   └── helpers/setup.ts          # Test DB bootstrap
-├── public/                       # Static PWA frontend
-│   ├── index.html                # Full SPA — 13 views, all modals, auth
-│   ├── js/app.js                 # App logic: auth, theming, i18n, all API calls
-│   └── css/styles.css            # Dark mode tokens, responsive layout
-├── scripts/
-│   └── seed-demo-data.ts         # Full demo dataset: products, aliases, khata, POs
-├── assets/screenshots/           # Verified application UI screenshots
-├── .env.example                  # Safe environment template
-├── package.json                  # Scripts: dev, build, start, test, seed
-├── tsconfig.json                 # Strict TypeScript config
-└── vitest.config.ts              # Test configuration
+
+#### Mathematical Formulation
+- **Levenshtein Distance Similarity:**
+  $$\text{Sim}_{\text{Lev}}(s_1, s_2) = 1 - \frac{\text{Lev}(s_1, s_2)}{\max(|s_1|, |s_2|)}$$
+- **Jaccard Token Overlap:**
+  $$J(T_1, T_2) = \frac{|T_1 \cap T_2|}{|T_1 \cup T_2|}$$
+- **Composite Score:**
+  $$S = \max\left(\text{Sim}_{\text{Lev}}, J, \frac{\text{Sim}_{\text{Lev}} + J}{2}\right)$$
+
+### 9.2 Cash-Constrained Replenishment Allocation Algorithm
+Standard ERPs calculate unconstrained replenishment orders using basic Min-Max logic. KiranaSaathi AI models replenishment as a **bounded greedy discrete knapsack allocation problem** (`BudgetAllocationService`):
+
+1. **Deficit Identification:** Candidates are identified where on-hand stock $S \le R$ (reorder point) or suggested reorder quantity $Q_{\text{sugg}} > 0$.
+2. **Multi-Factor Priority Scoring (0 to 100):**
+   $$P_i = \text{round}\left( (U_i \times 0.45 + V_i \times 0.35 + M_i \times 0.20) \times 100 \right)$$
+   Where:
+   - **Urgency ($U_i \in [0.3, 1.0]$):** Based on days of cover left ($D \le 1\text{d} \rightarrow 1.0$; $D \le 3\text{d} \rightarrow 0.8$; $D \le 7\text{d} \rightarrow 0.6$; else $0.3$).
+   - **Velocity ($V_i \in [0.2, 1.0]$):** Average daily turnover ($V \ge 10\text{ units/day} \rightarrow 1.0$; $V \ge 5 \rightarrow 0.8$; $V \ge 1 \rightarrow 0.5$; else $0.2$).
+   - **Gross Margin ($M_i \in [0.1, 1.0]$):** Profit contribution factor $\min(1.0, \max(0.1, 2 \times \text{margin}))$.
+3. **Greedy Allocation under Hard Cash Ceiling:**
+   - Sort candidates descending by $P_i$.
+   - For each candidate $i$ with unit cost $c_i$ and needed quantity $q_i$:
+     $$u_i = \left\lfloor \frac{B_{\text{rem}}}{c_i} \right\rfloor$$
+   - If $u_i \ge q_i$: Allocate $q_i$ units. Decrement $B_{\text{rem}} \leftarrow B_{\text{rem}} - (q_i \cdot c_i)$.
+   - Else if $u_i > 0$: Partially allocate $u_i$ units. Decrement $B_{\text{rem}} \leftarrow B_{\text{rem}} - (u_i \cdot c_i)$.
+   - Else: Defer item to `deferredItems[]` with an explicit reason (*"Unit cost ₹X exceeds available cash buffer of ₹Y"*).
+
+### 9.3 Immutable Ledger & Atomic FEFO Stock Deductions
+- Stock balances are not raw numbers mutated directly in the database.
+- Every receipt, sale, adjustment, or write-off creates an immutable `InventoryMovement` entry.
+- The `StockBalance` projection is updated atomically using MongoDB `$inc` operators with strict database-level preconditions:
+  ```typescript
+  StockBalance.findOneAndUpdate(
+    { shopId, productId, onHandQty: { $gte: requiredQty } },
+    { $inc: { onHandQty: -requiredQty } }
+  );
+  ```
+- FEFO (First-Expired-First-Out) iterates active `InventoryLot` documents sorted by `expiryDate: 1`, deducting stock sequentially from the oldest valid batch.
+
+---
+
+## 10. Inventory and Cash Workflows
+
+### 10.1 Supplier Invoice Ingestion & Verification Queue
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Supplier as Distributor / Salesman
+    actor Retailer as Kirana Owner
+    participant API as Express Gateway (/nopos)
+    participant Alias as Alias Engine
+    participant DB as MongoDB
+
+    Supplier->>Retailer: Delivers paper bill & goods
+    Retailer->>API: POST /nopos/invoices (Invoice #, Line descriptions, quantities, unit costs)
+    API->>DB: Persist InvoiceIngestion (status: 'pending_review')
+    loop For each Line Item
+        API->>Alias: resolveAlias(shopId, line.rawDescription)
+        Alias-->>API: Match result + confidence score
+    end
+    API-->>Retailer: Returns review queue with auto-mapped SKUs & flagged ambiguities
+    Retailer->>API: POST /nopos/invoices/:id/commit (Confirm mappings)
+    API->>DB: Atomically record InventoryMovements (type: 'RECEIPT')
+    API->>DB: Increment StockBalance & Create InventoryLots (FEFO)
+    API->>DB: Update InvoiceIngestion status: 'committed'
+    API-->>Retailer: Stock confirmed and committed to ledger
+```
+
+### 10.2 Cash-Constrained Replenishment Lifecycle
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Owner as Kirana Owner
+    participant Agent as ReAct Agent
+    participant Budget as Budget Allocation Service
+    participant Khata as Khata Service
+    participant PO as Purchasing Service
+
+    Owner->>Agent: "Plan replenishment with 5000 budget"
+    Agent->>Khata: getLiquidityContext(shopId)
+    Khata-->>Agent: Liquid Cash: ₹5,000 | Receivables: ₹4,200 | Safe Cap: ₹5,000
+    Agent->>Budget: generateBudgetPlan(shopId, budgetLimit: 5000)
+    Budget-->>Agent: Allocated: ₹4,850 (6 SKUs) | Deferred: 2 SKUs (Over budget)
+    Agent->>PO: createDraft(shopId, items)
+    PO-->>Agent: PurchaseOrder created (status: 'DRAFT')
+    Agent-->>Owner: Presents draft order and explains deferred items
+    Note over Owner,PO: Non-Bypassable Owner Approval Gate
+    Owner->>PO: POST /purchase-orders/:id/approve (JWT: Role.OWNER)
+    PO-->>Owner: Order approved (status: 'APPROVED')
 ```
 
 ---
 
-## ✅ Prerequisites
+## 11. Agentic AI Architecture
 
-| Requirement | Version | Notes |
-|---|---|---|
-| Node.js | v18+ (tested on v22.14.0) | [nodejs.org](https://nodejs.org) |
-| npm | v9+ | Bundled with Node.js |
-| MongoDB | Optional | Auto-starts in-memory if `MONGODB_URI` is blank |
-| Gemini API Key | Optional | Deterministic engine used if absent |
+The agent runs as a deterministic, bounded ReAct state machine (`src/modules/agent/agent.service.ts`):
 
-No Docker, no external infrastructure required for local development.
+```mermaid
+flowchart TD
+    PROMPT["User Input (Spoken or Typed)\nEnglish, Hindi, Hinglish"] --> ADAPTER{"AI Provider Adapter"}
+
+    ADAPTER -->|GEMINI_API_KEY Available| GEMINI["Google Gemini 1.5 Flash\n(Tool Calling Function Declarations)"]
+    ADAPTER -->|No Key / Timeout / Network Err| DETERMINISTIC["Deterministic Local Adapter\n(Regex & Intent Parser Fallback)"]
+
+    GEMINI --> ROUTE["Tool Selection & Argument Formulation"]
+    DETERMINISTIC --> ROUTE
+
+    ROUTE --> REGISTRY["Agent Tool Registry (11 Allowlisted Tools)"]
+
+    subgraph Security & Execution Boundary
+        REGISTRY --> ZOD["Zod Schema Parameter Validation"]
+        ZOD --> RBAC["Role-Based Access Gate (Owner / Manager / Staff)"]
+        RBAC --> EXEC["Tool Execution against Domain Service"]
+        EXEC --> TIMEOUT["Execution Timeout Guard (8,000ms)"]
+    end
+
+    TIMEOUT --> TRACE["Structured Trace Generation\n(toolName, params, durationMs, result)"]
+    TRACE --> PERSIST["Persist AgentRun Document to MongoDB"]
+    PERSIST --> RESP["Return Grounded, Explainable Text Response to User"]
+```
+
+### Allowlisted Tool Registry
+
+| Tool Identifier | Description | Required Role | Backing Service |
+|---|---|:---:|---|
+| `get_inventory_summary` | On-hand stock balances and low-stock alerts for all active SKUs | Any Member | `InventoryService` |
+| `get_low_stock_items` | Filter products currently at or below reorder points | Any Member | `InventoryService` |
+| `get_expiry_risks` | Identify inventory lots approaching expiry within $N$ days | Any Member | `ForecastingService` |
+| `calculate_reorder` | Compute velocity metrics and explainable replenishment needs | Owner / Manager | `ForecastingService` |
+| `get_dead_stock_summary` | 4-bracket ageing analysis (0-30d, 31-60d, 61-90d, 90+d) | Owner / Manager | `ForecastingService` |
+| `get_cash_budget_plan` | Bounded discrete allocation respecting hard cash budget cap | Owner / Manager | `BudgetAllocationService` |
+| `get_khata_summary` | Review customer credit and enforce liquidity invariants | Owner / Manager | `KhataService` |
+| `plan_festival_demand` | Demand surge projections (+25%, +60%, +120%) for major festivals | Owner / Manager | `FestivalService` |
+| `resolve_local_alias` | Resolve colloquial regional aliases to canonical catalogue SKUs | Any Member | `ProductAliasService` |
+| `compare_suppliers` | Compare distributor quotations and delivery lead times | Owner / Manager | `SupplierService` |
+| `create_purchase_order_draft` | Formulate supplier draft PO (*stays DRAFT until owner approves*) | Owner / Manager | `PurchasingService` |
 
 ---
 
-## 🚀 Quick Start
+## 12. Database and Security Model
 
-### 1. Clone & Install
+### 12.1 Schema Entity Relationships
+```mermaid
+erDiagram
+    SHOP ||--o{ USER_MEMBERSHIP : employs
+    USER ||--o{ USER_MEMBERSHIP : holds
+    SHOP ||--o{ PRODUCT : catalogues
+    PRODUCT ||--o{ PRODUCT_ALIAS : has
+    PRODUCT ||--o{ STOCK_BALANCE : tracks
+    PRODUCT ||--o{ INVENTORY_MOVEMENT : logs
+    PRODUCT ||--o{ INVENTORY_LOT : batches
+    SHOP ||--o{ KHATA_CUSTOMER : credits
+    KHATA_CUSTOMER ||--o{ KHATA_TRANSACTION : records
+    SHOP ||--o{ PURCHASE_ORDER : issues
+    PURCHASE_ORDER ||--|{ PO_LINE_ITEM : contains
+    SHOP ||--o{ AGENT_RUN : audits
 
+    STOCK_BALANCE {
+        ObjectId productId FK
+        Number onHandQty
+        Number reservedQty
+        Number version
+    }
+    INVENTORY_MOVEMENT {
+        ObjectId productId FK
+        String movementType
+        Number quantityDelta
+        Number unitCost
+        String referenceType
+        String idempotencyKey
+    }
+    PURCHASE_ORDER {
+        String poNumber
+        ObjectId supplierId FK
+        String status
+        Number totalEstimatedCost
+        ObjectId approvedBy FK
+    }
+```
+
+### 12.2 Security Architecture & Hardened Defenses
+- **Multi-Tenant Isolation:** Enforced via `tenantMiddleware`. Every query explicitly injects `{ shopId: new mongoose.Types.ObjectId(req.shopContext.shopId) }`. Zero cross-tenant data bleed.
+- **Authentication:** Salted password hashing with `bcryptjs` (cost factor: 10). Dual JWT lifecycle with 15-minute access tokens and 7-day refresh tokens protected by cryptographic JTI revocation.
+- **Non-Bypassable Owner Approval Invariant:** Only users verified with `membership.role === 'owner'` can transition a Purchase Order from `DRAFT` to `APPROVED`. Any modification to an approved PO immediately reverts its status to `DRAFT`.
+- **Concurrency & Anti-Overselling Guard:** Atomic MongoDB `$inc` operations with precondition checks prevent overselling during simultaneous racing checkouts.
+- **Idempotency Protection:** `idempotencyMiddleware` hashes request bodies via SHA-256. Identical retries return cached responses; modified payloads return `HTTP 409 Conflict`.
+
+---
+
+## 13. REST API Reference
+
+All routes are prefixed with `/api/v1`:
+
+### Authentication & Shop Onboarding
+| Method | Endpoint | Description | Auth / Role |
+|---|---|---|---|
+| `POST` | `/auth/register` | Register new user account | Public |
+| `POST` | `/auth/login` | Authenticate using identifier (email/phone) + password | Public |
+| `POST` | `/auth/refresh` | Rotate refresh token with JTI revocation check | Public |
+| `GET` | `/auth/me` | Fetch active user profile and shop memberships | Bearer Token |
+| `POST` | `/shops` | Onboard a new kirana store | Bearer Token |
+| `GET` | `/shops/:shopId/activation-status` | Track 7-day guided activation milestones | Any Shop Member |
+
+### Product Catalogue & Alias Resolution
+| Method | Endpoint | Description | Auth / Role |
+|---|---|---|---|
+| `GET` | `/shops/:shopId/products` | Search and list shop products | Any Shop Member |
+| `POST` | `/shops/:shopId/products` | Create new product with optional opening balance | Owner / Manager |
+| `POST` | `/shops/:shopId/products/resolve-alias` | Resolve colloquial Hinglish alias to canonical SKU | Any Shop Member |
+| `POST` | `/shops/:shopId/products/:id/aliases` | Register local shorthand alias for a product | Owner / Manager |
+
+### Inventory & No-POS Operations
+| Method | Endpoint | Description | Auth / Role |
+|---|---|---|---|
+| `GET` | `/shops/:shopId/inventory` | Real-time stock balance overview and status alerts | Any Shop Member |
+| `POST` | `/shops/:shopId/inventory/receipts` | Record supplier stock delivery (Idempotent) | Staff / Manager / Owner |
+| `GET` | `/shops/:shopId/inventory/movements` | Query immutable append-only movement ledger | Any Shop Member |
+| `GET` | `/shops/:shopId/inventory/reconcile` | Audit balance consistency against ledger movements | Owner / Manager |
+| `POST` | `/shops/:shopId/nopos/snapshots` | Record physical shelf count snapshot | Owner / Manager |
+| `POST` | `/shops/:shopId/nopos/depletions` | Record informal voice/text depletion observation | Staff / Manager / Owner |
+| `POST` | `/shops/:shopId/nopos/invoices` | Ingest supplier bill into verification queue | Owner / Manager |
+| `POST` | `/shops/:shopId/nopos/invoices/:id/commit` | Commit verified supplier invoice to inventory ledger | Owner / Manager |
+
+### POS Checkout & Sales
+| Method | Endpoint | Description | Auth / Role |
+|---|---|---|---|
+| `POST` | `/shops/:shopId/sales` | Record sale and atomically deduct FEFO stock | Staff / Manager / Owner |
+
+### Analytics & Replenishment
+| Method | Endpoint | Description | Auth / Role |
+|---|---|---|---|
+| `POST` | `/shops/:shopId/analytics/budget-replenishment` | Compute cash-constrained multi-SKU purchase plan | Owner / Manager |
+| `GET` | `/shops/:shopId/analytics/dead-stock-analysis` | 4-bracket ageing and landed-cost dead stock | Any Shop Member |
+| `GET` | `/shops/:shopId/analytics/reorder-recommendations`| Explainable velocity-based replenishment needs | Any Shop Member |
+| `GET` | `/shops/:shopId/analytics/expiry-risks` | Near-expiry lots and capital exposure | Any Shop Member |
+| `GET` | `/shops/:shopId/analytics/festival-scenarios` | Festive surge demand scenario projections | Any Shop Member |
+| `GET` | `/shops/:shopId/analytics/aggregate-demand` | Privacy-preserving $k$-anonymity market demand | Any Shop Member |
+
+### Khata Customer Credit Ledger
+| Method | Endpoint | Description | Auth / Role |
+|---|---|---|---|
+| `GET` | `/shops/:shopId/khata/liquidity-context` | Liquid cash vs uncollected receivables invariant | Any Shop Member |
+| `POST` | `/shops/:shopId/khata/customers` | Open customer credit account with spending limit | Owner / Manager |
+| `POST` | `/shops/:shopId/khata/customers/:id/credit` | Record credit sale to customer | Staff / Manager / Owner |
+| `POST` | `/shops/:shopId/khata/customers/:id/collect` | Record cash or UPI debt collection | Staff / Manager / Owner |
+
+### Purchasing & Supplier Relations
+| Method | Endpoint | Description | Auth / Role |
+|---|---|---|---|
+| `POST` | `/shops/:shopId/purchase-orders` | Create draft purchase order | Owner / Manager |
+| `POST` | `/shops/:shopId/purchase-orders/:id/approve` | **Approve purchase order** | **Owner Only** |
+| `POST` | `/shops/:shopId/purchase-orders/:id/receive` | Receive goods against purchase order | Owner / Manager |
+| `POST` | `/shops/:shopId/purchase-orders/pooled/proposals` | Create pooled bulk order proposal | Owner / Manager |
+
+### Agentic AI & Sync
+| Method | Endpoint | Description | Auth / Role |
+|---|---|---|---|
+| `POST` | `/shops/:shopId/agent/chat` | Send conversational prompt to ReAct agent | Any Shop Member |
+| `POST` | `/shops/:shopId/voice/transcribe-intent` | Parse speech transcript into structured intent | Any Shop Member |
+| `POST` | `/shops/:shopId/sync/batch` | Ingest offline event queue with conflict detection | Authenticated Device |
+| `GET` | `/health/live` | Container and process liveness health probe | Public |
+
+---
+
+## 14. Testing and Verification Evidence
+
+The system is validated by an automated integration and end-to-end test suite executed on Node.js v22.14.0 using Vitest v3.2.7:
+
+### Test Execution Summary
+```
+ Test Files  15 passed (15)
+      Tests  31 passed (31)
+   Duration  65.09s (transform 792ms, setup 0ms, collect 35.89s, tests 23.42s)
+```
+
+### Verified Test Suites Breakdown
+
+| Suite File | Scope & Assertions Verified |
+|---|---|
+| `tests/integration/concurrency-race.test.ts` | **High-Concurrency Race Defense**: 10 simultaneous HTTP sales racing for 1 on-hand unit. Exactly 1 succeeds; 9 receive `HTTP 409 Insufficient Stock`. Zero overselling. |
+| `tests/integration/auth-tenancy.test.ts` | **Security & Tenant Isolation**: User registration, JWT refresh rotation, revoked token rejection, and cross-tenant data denial (`HTTP 403 Forbidden`). |
+| `tests/integration/inventory-ledger.test.ts` | **Ledger Integrity**: Append-only movement records, initial opening balances, idempotency key replay caching, and reconciliation audits. |
+| `tests/integration/sales-receiving.test.ts` | **Sales & FEFO Deduction**: Multi-item sales atomically decrement stock balances and consume oldest inventory lots first. |
+| `tests/integration/purchasing-approval.test.ts` | **Owner Approval Invariant**: Verifies Managers/Staff receive `HTTP 403` on PO approval; only verified Owners can approve; stock increments upon receiving. |
+| `tests/integration/budget-replenishment.test.ts` | **Hard Cash Ceiling (PS-12)**: Budget cap is strictly enforced; prioritized SKUs allocated; unaffordable SKUs deferred with plain-language explanations. |
+| `tests/integration/product-alias.test.ts` | **Alias Resolution (PS-10)**: Normalization, exact alias matching, and dual-metric fuzzy scoring across Hinglish terms and Devanagari text. |
+| `tests/integration/nopos-workflow.test.ts` | **No-POS Workflows (PS-05 & PS-09)**: Shelf count snapshot variance reconciliation and supplier invoice ingestion review queues. |
+| `tests/integration/khata.test.ts` | **Khata Liquidity (PS-08)**: Credit accounts, repayments, and exclusion of uncollected receivables from liquid purchasing budgets. |
+| `tests/integration/forecasting.test.ts` | **Forecasting & Expiry (PS-01, PS-02, PS-03)**: Demand estimation, near-expiry alerts, and 4-bracket dead stock ageing calculations. |
+| `tests/integration/festival.test.ts` | **Festival Surge Planner (PS-04)**: Demand projections for Diwali, Eid, and Holi across Conservative, Moderate, and Aggressive scenarios. |
+| `tests/integration/pooled-and-aggregate.test.ts` | **Pooled Orders & Privacy (PS-15 & PS-16)**: Joint purchase order proposals and $k$-anonymized aggregate demand benchmarks. |
+| `tests/integration/offline-voice.test.ts` | **Offline Sync & Voice**: Event queue replay, conflict handling, and speech intent classification. |
+| `tests/integration/agent-tools.test.ts` | **Agentic Tool Governance**: Parameter schema validation, allowlisted tool execution, and persistent audit logging. |
+| `tests/e2e/complete-kirana-workflow.test.ts` | **Full 12-Step Business Lifecycle**: End-to-end simulation from store onboarding to invoice ingestion, alias mapping, replenishment, and owner PO approval. |
+
+---
+
+## 15. Business Model and Scalability
+
+### 15.1 Commercialization Strategy
+KiranaSaathi AI is designed for scalable adoption without infrastructure barriers:
+- **Freemium Micro-SaaS:** Free tier supporting up to 50 active catalogue staples, physical shelf snapshots, and basic low-stock warnings.
+- **Pro Tier (₹199–₹349 / month):** Full AI voice assistant, supplier invoice review queue, automated budget allocation engine, and Khata liquidity analytics.
+- **B2B Demand Insights (Privacy-Preserving):** Anonymized, high-level aggregate consumption trends ($k \ge 5$) delivered to FMCG brands and distributors. Shop-level individual transaction data is never sold.
+
+### 15.2 Unit Economics for the Retailer
+A typical Indian kirana store generating ₹3,00,000 monthly turnover experiences:
+- **Dead Stock Recovery:** Frees ₹15,000–₹30,000 in frozen working capital through 4-bracket ageing visibility and markdown triggers.
+- **Expiry Loss Mitigation:** Eliminates ₹5,000–₹10,000 monthly write-offs via proactive FEFO alerts.
+- **Stockout Reduction:** Recovers ₹8,000–₹12,000 in lost gross margin by preventing out-of-stock events on top-20 staples.
+- **ROI:** Retailer achieves estimated $>10\times$ net return on subscription cost in the first month.
+
+---
+
+## 16. Quick Start
+
+### Prerequisites
+- **Node.js:** v18.0.0 or higher (Tested on v22.14.0)
+- **npm:** v9.0.0 or higher
+- **MongoDB:** Optional (Automatically launches embedded `mongodb-memory-server` if no external URI is provided)
+
+### Step 1: Clone and Install
 ```bash
 git clone https://github.com/rajat552/KiranaSaathi-AI.git
 cd KiranaSaathi-AI
 npm install
 ```
 
-### 2. Configure Environment
-
+### Step 2: Configure Environment
+Copy the pre-configured development environment template:
 ```bash
 cp .env.example .env
 ```
+*(By default, `USE_MEMORY_DB=true` and `MONGODB_URI` is blank, allowing the application to run immediately with zero external dependencies).*
 
-The defaults in `.env.example` work immediately — in-memory MongoDB starts automatically. No external services needed.
-
-### 3. Start the Server
-
-```bash
-# Development (hot-reload):
-npm run dev
-
-# OR Production build:
-npm run build
-npm start
-```
-
-Server starts at **`http://localhost:4000`**
-
-### 4. Seed Demo Data *(Optional but Recommended)*
-
-Populates the database with realistic Indian kirana data — staple products, local aliases, near-expiry batches, khata customers, supplier quotes, and demo purchase orders:
-
+### Step 3: Seed Realistic Kirana Demo Data
+Populates the database with realistic Indian FMCG staples, regional aliases, near-expiry lots, khata credit accounts, and supplier quotations:
 ```bash
 npm run seed
 ```
 
-> **Note:** The in-memory database resets on each server restart. Run `npm run seed` again after any restart.
+### Step 4: Run the Application
+```bash
+# Development Mode (Hot-reload with tsx watch):
+npm run dev
 
-### 5. Demo Login Credentials
-
-| Role | Email | Password |
-|---|---|---|
-| **Owner** (full access) | `murugan.owner@kirana.in` | `KiranaPassword2026!` |
-| **Manager** | `manager@kirana.in` | `KiranaPassword2026!` |
-| **Staff** | `staff@kirana.in` | `KiranaPassword2026!` |
+# OR Production Mode:
+npm run build
+npm start
+```
+Open **`http://localhost:4000`** in your browser.
 
 ---
 
-## ⚙️ Environment Variables
+## 17. Demo Configuration & Test Personas
 
-| Variable | Purpose | Required | Default / Example |
+When running with demo seed data (`npm run seed`), authenticate using the credentials below:
+
+| Role | Email / Phone | Password | Capabilities & Access Bounds |
 |---|---|---|---|
+| **Owner** | `murugan.owner@kirana.in` | `KiranaPassword2026!` | **Full Access**: Approve POs, modify catalogue, run budget allocations, view Khata liquidity. |
+| **Manager** | `manager@kirana.in` | `KiranaPassword2026!` | **Operational**: Ingest invoices, perform shelf snapshots, draft POs. *PO approval blocked (`403`).* |
+| **Staff** | `staff@kirana.in` | `KiranaPassword2026!` | **Counter**: Log daily voice depletions, process POS checkout, record customer credit payments. |
+
+*Quick Switcher Modal: You can instantly switch between these personas by clicking your store name or role badge in the top-right header.*
+
+---
+
+## 18. Environment Variables Reference
+
+| Variable | Description | Required in Prod | Default / Development Value |
+|---|---|:---:|---|
 | `PORT` | HTTP server port | No | `4000` |
-| `NODE_ENV` | Runtime environment | No | `development` |
-| `API_PREFIX` | Base URL prefix for all routes | No | `/api/v1` |
-| `MONGODB_URI` | MongoDB connection string | No | *(blank → in-memory DB)* |
-| `USE_MEMORY_DB` | Force in-memory MongoDB | No | `true` |
-| `JWT_ACCESS_SECRET` | Access token signing secret | **Yes (prod)** | `kiranasaathi_..._demo` |
-| `JWT_REFRESH_SECRET` | Refresh token signing secret | **Yes (prod)** | `kiranasaathi_..._demo` |
-| `JWT_ACCESS_EXPIRY` | Access token lifetime | No | `15m` |
-| `JWT_REFRESH_EXPIRY` | Refresh token lifetime | No | `7d` |
-| `CORS_ORIGIN` | Allowed CORS origin | No | `*` |
-| `GEMINI_API_KEY` | Gemini API for LLM intent detection | No | *(blank → deterministic fallback)* |
-| `LYZR_API_KEY` | Alternative AI provider | No | *(unused if Gemini set)* |
-
-> ⚠️ **Never commit real `JWT_ACCESS_SECRET` or `JWT_REFRESH_SECRET` values to source control.**
+| `NODE_ENV` | Runtime environment (`development`, `production`, `test`) | No | `development` |
+| `API_PREFIX` | REST API routing prefix | No | `/api/v1` |
+| `MONGODB_URI` | MongoDB connection string | **Yes** (in Prod) | Blank *(Triggers in-memory MongoDB)* |
+| `USE_MEMORY_DB` | Force in-memory MongoDB engine | No | `true` |
+| `JWT_ACCESS_SECRET` | Secret for HMAC-SHA256 access tokens | **Yes** | `kiranasaathi_super_secret_jwt_access_key_2026_demo` |
+| `JWT_REFRESH_SECRET` | Secret for HMAC-SHA256 refresh tokens | **Yes** | `kiranasaathi_super_secret_jwt_refresh_key_2026_demo` |
+| `JWT_ACCESS_EXPIRY` | Access token lifespan | No | `15m` |
+| `JWT_REFRESH_EXPIRY` | Refresh token lifespan | No | `7d` |
+| `CORS_ORIGIN` | Allowed Cross-Origin Resource Sharing origins | No | `*` |
+| `GEMINI_API_KEY` | Google Gemini API key for LLM intent parsing | No | Blank *(Falls back to deterministic local adapter)* |
+| `LYZR_API_KEY` | Optional alternative agent provider key | No | Blank |
 
 ---
 
-## 📖 Usage Guide
+## 19. Deployment Guide
 
-### Dashboard
-- **KPI Cards:** Total products, low-stock count, near-expiry lots, safe cash buffer
-- **7-Day Activation Milestones:** Tracks your onboarding progress (catalogue → snapshot → invoices → depletions → first PO)
-- **Operational Alerts:** Dead stock highlights and urgent reorder signals
-
-### No-POS Operations
-1. **Voice/Text Depletion:** Type *"5 cheeni packet beche"* or *"8 parle-g sold"* — the system resolves the alias and logs it
-2. **Shelf Snapshot:** Record a physical shelf count; the engine computes variance vs ledger
-3. **Supplier Invoice Queue:** Ingest a bill; review line items; commit to inventory ledger after verification
-
-### Cash Budget Planner
-1. Enter your weekly cash cap (e.g., ₹5,000)
-2. Click **Run Bounded Allocation**
-3. See which SKUs are fully allocated, partially allocated, or deferred — with plain-language rationale for each
-
-### AI Voice Assistant
-Type or speak any of:
-```
-"What should I reorder today?"
-"Analyze my dead stock"
-"Plan replenishment under cash budget 8000"
-"How much is in customer khata?"
-"Show Diwali demand surge scenarios"
-"Check expiry risks"
-```
-
-The agent routes your query to the appropriate backend tool, executes it, formats a human-readable response, and logs the full tool call trace.
-
-### Khata & Liquidity
-- Add customer credit accounts
-- Record credit given and cash/UPI collections
-- View **Safe Reorder Budget Cap** = liquid cash − collection-probability-discounted receivables
-
-### Purchase Orders
-1. Create a draft PO (AI or manual)
-2. Only the **Owner** can approve — Manager/Staff receive `HTTP 403`
-3. Any edit to an approved order automatically reverts it to `DRAFT`
-4. Receive goods to update inventory
-
----
-
-## 🔌 REST API Reference
-
-All endpoints are prefixed with `/api/v1`:
-
-### Authentication
-
-| Method | Endpoint | Description | Auth |
-|---|---|---|---|
-| `POST` | `/auth/register` | Register new user | Public |
-| `POST` | `/auth/login` | Login, receive JWT access + refresh tokens | Public |
-| `POST` | `/auth/refresh` | Rotate refresh token (JTI revocation) | Public |
-| `GET` | `/auth/me` | Get user profile + shop memberships | Bearer |
-
-### Shops
-
-| Method | Endpoint | Description | Auth |
-|---|---|---|---|
-| `POST` | `/shops` | Create a shop | Bearer |
-| `GET` | `/shops/:shopId/activation-status` | 7-day activation milestones | Member |
-
-### Products & Aliases
-
-| Method | Endpoint | Description | Auth |
-|---|---|---|---|
-| `GET` | `/shops/:shopId/products` | List/search products | Member |
-| `POST` | `/shops/:shopId/products` | Create product + opening balance | Owner/Manager |
-| `POST` | `/shops/:shopId/products/resolve-alias` | Resolve colloquial name → canonical SKU | Member |
-| `POST` | `/shops/:shopId/products/:id/aliases` | Register local alias | Owner/Manager |
-
-### Inventory
-
-| Method | Endpoint | Description | Auth |
-|---|---|---|---|
-| `GET` | `/shops/:shopId/inventory` | Real-time stock overview + alert statuses | Member |
-| `POST` | `/shops/:shopId/inventory/receipts` | Record goods received (idempotent) | Staff+ |
-| `GET` | `/shops/:shopId/inventory/movements` | Query immutable movement ledger | Member |
-| `GET` | `/shops/:shopId/inventory/reconcile` | Audit ledger consistency | Owner/Manager |
-
-### No-POS Operations
-
-| Method | Endpoint | Description | Auth |
-|---|---|---|---|
-| `POST` | `/shops/:shopId/nopos/snapshots` | Record shelf count snapshot | Owner/Manager |
-| `POST` | `/shops/:shopId/nopos/depletions` | Record voice/text depletion observation | Staff+ |
-| `POST` | `/shops/:shopId/nopos/invoices` | Ingest supplier invoice into review queue | Owner/Manager |
-| `POST` | `/shops/:shopId/nopos/invoices/:id/commit` | Commit verified invoice to ledger | Owner/Manager |
-
-### Sales
-
-| Method | Endpoint | Description | Auth |
-|---|---|---|---|
-| `POST` | `/shops/:shopId/sales` | Record sale + atomic FEFO stock deduction | Staff+ |
-
-### Analytics
-
-| Method | Endpoint | Description | Auth |
-|---|---|---|---|
-| `POST` | `/shops/:shopId/analytics/budget-replenishment` | Cash-constrained multi-SKU purchase plan | Owner/Manager |
-| `GET` | `/shops/:shopId/analytics/dead-stock-analysis` | 4-bracket ageing + landed-cost analysis | Member |
-| `GET` | `/shops/:shopId/analytics/reorder-recommendations` | Explainable replenishment suggestions | Member |
-| `GET` | `/shops/:shopId/analytics/expiry-risks` | Near-expiry lots and tied capital | Member |
-| `GET` | `/shops/:shopId/analytics/festival-scenarios` | Festival demand surge projections | Member |
-| `GET` | `/shops/:shopId/analytics/aggregate-demand` | Privacy-preserving k-anonymity market demand | Member |
-
-### Khata (Customer Credit)
-
-| Method | Endpoint | Description | Auth |
-|---|---|---|---|
-| `GET` | `/shops/:shopId/khata/liquidity-context` | Real liquid cash vs uncollected khata | Member |
-| `POST` | `/shops/:shopId/khata/customers` | Open customer credit account | Owner/Manager |
-| `POST` | `/shops/:shopId/khata/customers/:id/credit` | Record credit given | Staff+ |
-| `POST` | `/shops/:shopId/khata/customers/:id/collect` | Record cash/UPI collection | Staff+ |
-
-### Purchasing
-
-| Method | Endpoint | Description | Auth |
-|---|---|---|---|
-| `POST` | `/shops/:shopId/purchase-orders` | Create draft PO | Owner/Manager |
-| `POST` | `/shops/:shopId/purchase-orders/:id/approve` | **Approve PO** | **Owner Only** |
-| `POST` | `/shops/:shopId/purchase-orders/:id/receive` | Receive goods against approved PO | Owner/Manager |
-| `POST` | `/shops/:shopId/purchase-orders/pooled/proposals` | Create pooled bulk order proposal | Owner/Manager |
-
-### AI Agent, Voice & Sync
-
-| Method | Endpoint | Description | Auth |
-|---|---|---|---|
-| `POST` | `/shops/:shopId/agent/chat` | Send prompt to AI agent | Member |
-| `POST` | `/shops/:shopId/voice/transcribe-intent` | Parse Hinglish speech to structured intent | Member |
-| `POST` | `/shops/:shopId/sync/batch` | Ingest offline event queue | Authenticated Device |
-| `GET` | `/api/v1/health/live` | Liveness probe | Public |
-
----
-
-## 🧪 Testing
-
-### Run All Tests
-
+### Standalone Production Deployment
 ```bash
-npm test
+# 1. Compile TypeScript source to dist/
+npm run build
+
+# 2. Set production environment variables
+export NODE_ENV=production
+export MONGODB_URI="mongodb+srv://<user>:<password>@cluster.mongodb.net/kiranasaathi?retryWrites=true&w=majority"
+export USE_MEMORY_DB=false
+export JWT_ACCESS_SECRET="<generate-secure-64-char-secret>"
+export JWT_REFRESH_SECRET="<generate-secure-64-char-secret>"
+
+# 3. Launch the production server
+npm start
 ```
 
-### Test Suites (15 total — 31 tests — 100% passing)
-
-| # | Suite | What It Verifies |
-|---|---|---|
-| 1 | `auth-tenancy.test.ts` | Registration, login, token rotation, multi-tenant data isolation |
-| 2 | `inventory-ledger.test.ts` | Immutable movement ledger, opening balance, idempotency |
-| 3 | `sales-receiving.test.ts` | Multi-item sales, FEFO lot deduction, oversell protection |
-| 4 | `concurrency-race.test.ts` | **10 concurrent threads competing for 1 unit** — only 1 succeeds |
-| 5 | `purchasing-approval.test.ts` | Supplier quotes, PO lifecycle, owner-only approval enforcement |
-| 6 | `forecasting.test.ts` | Demand estimation, near-expiry detection, dead stock ageing |
-| 7 | `product-alias.test.ts` | Hinglish/regional alias resolution, phonetic + fuzzy matching |
-| 8 | `nopos-workflow.test.ts` | Shelf snapshots, voice depletions, invoice review queue |
-| 9 | `budget-replenishment.test.ts` | Hard cash budget cap, multi-SKU greedy allocation |
-| 10 | `khata.test.ts` | Customer credit ledger, liquidity invariant enforcement |
-| 11 | `festival.test.ts` | Diwali/Eid/Holi/Pongal surge scenario projections |
-| 12 | `pooled-and-aggregate.test.ts` | Pooled purchases, k-anonymity aggregate demand |
-| 13 | `offline-voice.test.ts` | Offline event batch sync, idempotent replay, voice intent parser |
-| 14 | `agent-tools.test.ts` | Agentic AI orchestration, tool registry, role gates, audit traces |
-| 15 | `complete-kirana-workflow.test.ts` | **Full 12-step end-to-end business lifecycle** |
-
-```bash
-# Run with coverage report:
-npm run test:coverage
-
-# Watch mode for development:
-npm run test:watch
-```
+### Containerized Platforms (Railway / Render / Fly.io / AWS ECS)
+1. Configure Node.js 22 runtime environment.
+2. Build command: `npm run build`
+3. Start command: `npm start`
+4. Inject production environment variables via platform secret manager.
+5. Provide a valid external MongoDB Atlas 8.0 cluster URI.
 
 ---
 
-## 🔄 End-to-End Workflows
+## 20. Known Limitations and Future Roadmap
 
-### Document Ingestion: Supplier Invoice → Inventory Ledger
+### Disclosed Technical Trade-Offs
+1. **Invoice OCR:** Current implementation processes structured supplier bills via manual review queues and JSON/text ingestion; direct camera-based physical paper invoice OCR is currently in roadmap.
+2. **Offline Client Cache:** Backend supports idempotent batch offline event ingestion (`/sync/batch`); full offline client-side caching via Service Worker & IndexedDB is partially implemented.
+3. **Double Metaphone Phonetic Scoring:** Current product alias resolution relies on exact token matching, Jaccard overlap, and Levenshtein distance; phonetic Double Metaphone indexing is scheduled for V2.1.
+4. **LLM Dependency:** When `GEMINI_API_KEY` is not supplied, the AI assistant utilizes deterministic regex and keyword intent routing. While 100% reliable and zero-cost, it lacks conversational elasticity.
 
-```mermaid
-sequenceDiagram
-    participant Owner
-    participant UI as Frontend PWA
-    participant API as /nopos/invoices
-    participant DB as MongoDB
-
-    Owner->>UI: Submit supplier invoice (invoice #, description, qty, cost)
-    UI->>API: POST /nopos/invoices
-    API->>DB: Save invoice → status: PENDING_REVIEW
-    API-->>UI: Invoice queued for review
-
-    Owner->>UI: Review invoice lines, verify product aliases
-    UI->>API: POST /nopos/invoices/:id/commit
-    API->>DB: Resolve aliases → record inventory RECEIPT movement
-    API->>DB: Update StockBalance atomically
-    API->>DB: Create FEFO lot (if expiry date provided)
-    API-->>UI: Stock updated ✓
-```
-
-### AI Agent Query Workflow
-
-```mermaid
-sequenceDiagram
-    participant User
-    participant UI as PWA Chat
-    participant Agent as Agent Service
-    participant Provider as AI Provider Adapter
-    participant Tool as Tool Registry
-    participant DB as MongoDB
-
-    User->>UI: "Plan replenishment with 5000 budget"
-    UI->>Agent: POST /agent/chat {prompt}
-    Agent->>Provider: processPrompt(context, prompt, tools)
-    Provider->>Provider: Gemini API (or deterministic fallback)
-    Provider-->>Agent: {toolName: 'get_cash_budget_plan', toolArgs: {budgetLimit: 5000}}
-    Agent->>Tool: Validate role + Zod params
-    Tool->>DB: Fetch stock, demand forecasts, product costs
-    Tool-->>Agent: BudgetReplenishmentPlan
-    Agent->>Agent: Format human-readable response
-    Agent->>DB: Save AgentRun audit record
-    Agent-->>UI: Formatted response + toolCallsTrace
-    UI-->>User: "💵 Allocated ₹4,850 across 8 SKUs (97%). 2 items deferred..."
-```
-
-### Replenishment Purchase Order Lifecycle
-
-```mermaid
-flowchart LR
-    DRAFT["DRAFT\n(AI or Manual)"]
-    APPROVED["APPROVED\n(Owner Only)"]
-    RECEIVED["RECEIVED\n(Goods Arrived)"]
-    CANCELLED["CANCELLED"]
-
-    DRAFT -->|Owner approves| APPROVED
-    DRAFT -->|Cancel| CANCELLED
-    APPROVED -->|Any edit| DRAFT
-    APPROVED -->|Goods received| RECEIVED
-
-    style APPROVED fill:#d1fae5,stroke:#059669
-    style CANCELLED fill:#fee2e2,stroke:#dc2626
-```
+### Architectural Roadmap
+- [ ] **On-Device Invoice Scanning:** Integration of lightweight on-device Tesseract OCR for camera scanning of handwritten distributor receipts.
+- [ ] **WhatsApp Business Channel:** Direct voice-note depletion ingestion via WhatsApp Webhooks for zero-app friction.
+- [ ] **Multi-Dialect Phonetic Embeddings:** Domain-trained Devanagari, Tamil, and Telugu sentence-transformers for vernacular product embeddings.
+- [ ] **Distributor Pooling Hub:** Direct B2B supplier integration for automated group purchase aggregation across neighbouring pin codes.
 
 ---
 
-## 🔧 Troubleshooting
+## 21. License and Acknowledgements
 
-| Symptom | Likely Cause | Fix |
-|---|---|---|
-| `Cannot connect to MongoDB` | MONGODB_URI incorrect or Atlas unreachable | Leave `MONGODB_URI` blank to use in-memory DB |
-| `Login returns 401` | In-memory DB reset after server restart | Run `npm run seed` again after restarting |
-| `Tests fail with timeout` | Vitest hitting the 60s default | In-memory DB sometimes slow on first run; retry `npm test` |
-| `PO approve returns 403` | Logged in as Manager or Staff | Switch to Owner role; only Owners can approve |
-| `Alias resolution returns 'none'` | Product not in catalogue yet | Add the product first via Products view |
-| `Port 4000 already in use` | Previous dev server still running | `kill -9 $(lsof -t -i:4000)` or change `PORT` in `.env` |
-| `Gemini API not responding` | Missing or invalid `GEMINI_API_KEY` | Normal — deterministic engine activates automatically |
+This project is licensed under the **ISC License**. See [LICENSE](LICENSE) for details.
 
----
+Developed for **Tech4Bharat 2026** (GAVS HackCulture).  
+**Track:** Rural FMCG and Logistics | **Problem Statement:** 5.1
 
-## 🚢 Deployment
-
-### Local Production Build
-
-```bash
-npm run build        # Compiles TypeScript → dist/
-npm start            # Runs dist/server.js
-```
-
-### Environment for Production
-
-```env
-NODE_ENV=production
-MONGODB_URI=mongodb+srv://user:pass@cluster.mongodb.net/kiranasaathi
-USE_MEMORY_DB=false
-JWT_ACCESS_SECRET=<64-char random secret>
-JWT_REFRESH_SECRET=<64-char random secret>
-JWT_ACCESS_EXPIRY=15m
-JWT_REFRESH_EXPIRY=7d
-CORS_ORIGIN=https://your-frontend-domain.com
-GEMINI_API_KEY=<your Gemini API key>
-```
-
-### Railway / Render / Fly.io
-
-1. Connect your GitHub repo
-2. Set `npm run build` as the build command
-3. Set `npm start` as the start command
-4. Add all production environment variables
-5. Set `PORT` to whatever the platform provides (Express reads `process.env.PORT`)
-
-> The app serves both the REST API and the static frontend from a single process — no separate frontend deployment needed.
-
----
-
-## 📊 Project Status
-
-### ✅ Completed (Hackathon Submission State)
-
-- 15/15 test suites, 31/31 tests passing
-- Full REST API (40+ endpoints)
-- Complete PWA frontend (13 views, 10+ modals)
-- Governed Agentic AI with Gemini + deterministic fallback
-- 5-tier product alias resolution (Hinglish/Devanagari support)
-- Concurrency-safe inventory with FEFO
-- Hard cash budget allocation (bounded greedy knapsack)
-- Khata liquidity invariant
-- Festival demand planning (4 festivals × 3 scenarios)
-- Pooled purchasing + k-anonymity aggregate demand
-- Offline event sync with idempotent replay
-- 7-day guided onboarding activation
-- Dark mode + English/Hindi language toggle
-
-### 🔮 Roadmap
-
-- [ ] Real barcode scanner via browser camera API
-- [ ] WhatsApp Business webhook for voice note ingestion
-- [ ] PWA service worker + IndexedDB offline-first
-- [ ] Automated distributor visit scheduling
-- [ ] SMS/OTP owner approval flow
-- [ ] Multi-language support (Tamil, Telugu, Marathi)
-
----
-
-## 🤝 Contributing
-
-This project was built for **GAVS HackCulture — Tech4Bharat 2026**. 
-
-To run a fresh development environment:
-
-```bash
-git clone https://github.com/rajat552/KiranaSaathi-AI.git
-cd KiranaSaathi-AI
-npm install
-cp .env.example .env
-npm run dev        # Start server
-npm run seed       # Seed demo data (new terminal)
-npm test           # Verify all 31 tests pass
-```
-
----
-
-## 📄 License & Acknowledgements
-
-Licensed under the [ISC License](https://opensource.org/licenses/ISC).
-
-Built for **GAVS HackCulture — Tech4Bharat 2026**  
-Theme 5: Retail, FMCG & Logistics | Problem Statement 5.1  
-*Kiranas tie up cash in dead stock while running out of fast-moving essentials*
-
-**GitHub:** [github.com/rajat552/KiranaSaathi-AI](https://github.com/rajat552/KiranaSaathi-AI)
+**Public Code Repository:** [https://github.com/rajat552/KiranaSaathi-AI](https://github.com/rajat552/KiranaSaathi-AI)
